@@ -12,13 +12,47 @@ type repository struct {
 }
 
 func (r repository) Create(ctx context.Context, device entities.Device) error {
-	//TODO implement me
-	panic("implement me")
+	query := `
+	INSERT INTO device (name, id_resolution, id_orientation) 
+	VALUES (?,?,?)
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, device.Name, device.Resolution.Id, device.Orientation)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r repository) Update(ctx context.Context, device entities.Device) error {
-	//TODO implement me
-	panic("implement me")
+	query := `
+	UPDATE device d
+	SET
+	    d.name = ?, 
+	    d.id_resolution = ?, 
+	    d.id_orientation = ?
+	WHERE id = ?
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, device.Name, device.Resolution.Id, device.Orientation, device.Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r repository) Delete(ctx context.Context, device entities.Device) error {
@@ -38,14 +72,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Device, error) {
 	       d.modified_at
 	FROM device as d
 	`
-
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.QueryContext(ctx)
+	result, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		log.Printf("Error in [QueryContext]: %v", err)
 		return nil, err

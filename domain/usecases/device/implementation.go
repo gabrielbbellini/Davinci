@@ -17,8 +17,7 @@ func NewUseCases(deviceRepo device.Repository) UseCases {
 }
 
 func (u useCases) Create(ctx context.Context, device entities.Device) error {
-	//TODO implement me
-	panic("implement me")
+	return u.deviceRepo.Create(ctx, device)
 }
 
 func (u useCases) Update(ctx context.Context, device entities.Device) error {
