@@ -92,6 +92,7 @@ func rootMiddleware(next http.Handler) http.Handler {
 
 // apiMiddleware set the response content type for the api as json.
 func apiMiddleware(next http.Handler) http.Handler {
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//Set the response content type for the api as json
 		w.Header().Set("Content-Type", "application/json")
