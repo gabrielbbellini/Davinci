@@ -138,14 +138,14 @@ func (a authorizationHelper) authorizationMiddleware(next http.Handler) http.Han
 			return
 		}
 
-		tokenData, ok := token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok && !token.Valid {
 			log.Println("[authorizationMiddleware] Error !ok && !token.Valid", err)
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		userString, ok := tokenData["user"]
+		userString, ok := claims["user"]
 		if !ok {
 			log.Println("[authorizationMiddleware] Error !ok", err)
 			next.ServeHTTP(w, r)
