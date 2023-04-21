@@ -4,9 +4,11 @@ import (
 	"base/domain/entities"
 	authorization_usecases "base/domain/usecases/authorization"
 	device_usecases "base/domain/usecases/device"
+	presentation_usecases "base/domain/usecases/presentation"
 	resolution_usecases "base/domain/usecases/resolution"
 	authorization_repository "base/infrastructure/repositories/authorization"
 	device_repository "base/infrastructure/repositories/device"
+	presentation_repository "base/infrastructure/repositories/presentation"
 	resolution_repository "base/infrastructure/repositories/resolution"
 	"base/view"
 	"base/view/http_error"
@@ -72,12 +74,17 @@ func setupMVC(router *mux.Router, db *sql.DB) error {
 	apiRouter.Use(authorizationHelper.authorizationMiddleware)
 
 	deviceRepository := device_repository.NewRepository(db)
-	resolutionRepository := resolution_repository.NewResolutionRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
+
+	resolutionRepository := resolution_repository.NewResolutionRepository(db)
 	resolutionUseCase := resolution_usecases.NewUseCases(resolutionRepository)
+
+	presentationRepository := presentation_repository.NewPresentationRepository(db)
+	presentationUseCase := presentation_usecases.NewUseCases(presentationRepository)
 
 	view.NewHTTPResolutionModule(resolutionUseCase).Setup(apiRouter)
 	view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
+	view.NewHTTPPresentationModule(presentationUseCase).Setup(apiRouter)
 
 	return nil
 }
