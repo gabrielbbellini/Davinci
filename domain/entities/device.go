@@ -12,9 +12,9 @@ type Resolution struct {
 	Height int
 }
 
-type Orientation string
+type Orientation int
 
 const (
-	OrientationPortrait  Orientation = "portrait"
-	OrientationLandscape Orientation = "landscape"
+	OrientationPortrait  Orientation = 1
+	OrientationLandscape Orientation = 2
 )
