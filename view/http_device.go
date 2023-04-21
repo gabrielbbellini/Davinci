@@ -1,10 +1,12 @@
 package view
 
 import (
+	"base/domain/entities"
 	"base/domain/usecases/device"
 	"base/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -23,6 +25,30 @@ func NewHTTPDeviceModule(cases device.UseCases) HttpModule {
 func (n newHTTPDeviceModule) Setup(router *mux.Router) {
 	router.HandleFunc("/devices", n.getAll).Methods("GET")
 	router.HandleFunc("/devices/{id}", n.getById).Methods("GET")
+	router.HandleFunc("/devices", n.create).Methods("POST")
+}
+
+func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
+	request := r.Body
+	var dev entities.Device
+
+	read, err := io.ReadAll(request)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(read, &dev)
+	if err != nil {
+		return
+	}
+
+	ctx := r.Context()
+	err = n.useCases.Create(ctx, dev)
+	if err != nil {
+		log.Println("[Create] Error", err)
+		http_error.HandleError(w, err)
+		return
+	}
 }
 
 func (n newHTTPDeviceModule) getAll(w http.ResponseWriter, r *http.Request) {

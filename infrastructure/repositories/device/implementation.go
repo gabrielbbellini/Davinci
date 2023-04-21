@@ -12,8 +12,23 @@ type repository struct {
 }
 
 func (r repository) Create(ctx context.Context, device entities.Device) error {
-	//TODO implement me
-	panic("implement me")
+	query := `
+	INSERT INTO device (name, id_resolution, id_orientation) 
+	VALUES (?,?,?)
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, device.Name, device.Resolution.Id, device.Orientation)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r repository) Update(ctx context.Context, device entities.Device) error {
