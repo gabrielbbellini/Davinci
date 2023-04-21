@@ -53,6 +53,8 @@ func setupDataBase() (*sql.DB, error) {
 
 // SetupMVC set the MVC structure for the application.
 func setupMVC(router *mux.Router, db *sql.DB) error {
+	router.Use(rootMiddleware)
+
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	apiRouter.Use(apiMiddleware)
 	apiRouter.Use(authorizationMiddleware)
@@ -66,6 +68,20 @@ func setupMVC(router *mux.Router, db *sql.DB) error {
 	view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
 
 	return nil
+}
+
+// rootMiddleware set the response content type for the api as json.
+func rootMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//Set the response content type for the api as json
+		w.Header().Set("Content-Type", "application/json")
+
+		//Set the origin to allow all.
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		//Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
 }
 
 // apiMiddleware set the response content type for the api as json.
