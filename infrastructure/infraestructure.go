@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"base/domain/entities"
 	authorization_usecases "base/domain/usecases/authorization"
 	device_usecases "base/domain/usecases/device"
 	resolution_usecases "base/domain/usecases/resolution"
@@ -9,7 +10,10 @@ import (
 	resolution_repository "base/infrastructure/repositories/resolution"
 	"base/view"
 	"base/view/http_error"
+	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -57,13 +61,15 @@ func setupDataBase() (*sql.DB, error) {
 func setupMVC(router *mux.Router, db *sql.DB) error {
 	router.Use(rootMiddleware)
 
-	apiRouter := router.PathPrefix("/api").Subrouter()
-	apiRouter.Use(apiMiddleware)
-	apiRouter.Use(authorizationMiddleware)
-
 	authorizationRepository := authorization_repository.NewRepository(db)
 	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
 	view.NewHTTPAuthorization(authorizationUseCases).Setup(router)
+
+	apiRouter := router.PathPrefix("/api").Subrouter()
+	apiRouter.Use(apiMiddleware)
+
+	authorizationHelper := authorizationHelper{useCases: authorizationUseCases}
+	apiRouter.Use(authorizationHelper.authorizationMiddleware)
 
 	deviceRepository := device_repository.NewRepository(db)
 	resolutionRepository := resolution_repository.NewResolutionRepository(db)
@@ -102,8 +108,12 @@ func apiMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+type authorizationHelper struct {
+	useCases authorization_usecases.UseCases
+}
+
 // authorizationMiddleware check if the user has the cookie with the token and if the token is valid.
-func authorizationMiddleware(next http.Handler) http.Handler {
+func (a authorizationHelper) authorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//Check if the user has the cookie with the token
 		cookie, err := r.Cookie("cookie")
@@ -119,41 +129,73 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 			http_error.HandleError(w, http_error.NewUnauthorizedError(err.Error()))
 			return
 		}
+
+		token, err := getTokenFromCookie(cookie)
+		if err != nil {
+			log.Println("[authorizationMiddleware] Error getTokenFromCookie", err)
+			http_error.HandleError(w, http_error.NewUnauthorizedError(err.Error()))
+			return
+		}
+
 		//Check if the token is valid
-		if !isCookieValid(cookie) {
+		if !token.Valid {
 			//If the token is not valid, return an error
-			log.Println("[authorizationMiddleware] Error isCookieValid", err)
+			log.Println("[authorizationMiddleware] Error !token.Valid", err)
 			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
 			return
 		}
 
+		tokenData, ok := token.Claims.(jwt.MapClaims)
+		if !ok && !token.Valid {
+			log.Println("[authorizationMiddleware] Error !ok && !token.Valid", err)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		userString, ok := tokenData["user"]
+		if !ok {
+			log.Println("[authorizationMiddleware] Error !ok", err)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		var user entities.User
+		err = json.Unmarshal([]byte(userString.(string)), &user)
+		if err != nil {
+			log.Println("[authorizationMiddleware] Error json.Unmarshal", err)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "user", user)
+
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
+
 	})
 }
 
-// isCookieValid check if the token is valid.
-func isCookieValid(cookie *http.Cookie) bool {
+// getTokenFromCookie get the token from the cookie.
+func getTokenFromCookie(cookie *http.Cookie) (*jwt.Token, error) {
 	secureCookie := securecookie.New([]byte(view.SecretJWTKey), nil)
 	var tokenString string
 	err := secureCookie.Decode("token", cookie.Value, &tokenString)
 	if err != nil {
 		log.Println("[login] Error Decode", err)
-		return false
+		return nil, err
 	}
 
-	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			log.Println("[login] token.Method.(*jwt.SigningMethodHMAC) !ok", err)
-			return nil, nil
+			return nil, errors.New("error parsing token")
 		}
 		return []byte(view.SecretJWTKey), nil
 	})
 	if err != nil {
 		log.Println("[isCookieValid] Error parsing token", err)
-		return false
+		return nil, err
 	}
 
-	return parsedToken.Valid
+	return token, nil
 }

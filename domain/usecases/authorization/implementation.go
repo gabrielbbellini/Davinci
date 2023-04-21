@@ -20,13 +20,13 @@ func NewUseCases(
 	}
 }
 
-func (u useCases) Login(ctx context.Context, credential entities.Credential) error {
+func (u useCases) Login(ctx context.Context, credential entities.Credential) (*entities.User, error) {
 	if strings.TrimSpace(credential.Email) == "" {
-		return http_error.NewForbiddenError("Credenciais inválidas")
+		return nil, http_error.NewForbiddenError("Credenciais inválidas")
 	}
 
 	if strings.TrimSpace(credential.Password) == "" {
-		return http_error.NewForbiddenError("Credenciais inválidas")
+		return nil, http_error.NewForbiddenError("Credenciais inválidas")
 	}
 
 	return u.repository.Login(ctx, credential)
