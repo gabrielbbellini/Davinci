@@ -11,7 +11,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r repository) Create(ctx context.Context, device entities.Device) error {
+func (r repository) Create(ctx context.Context, device entities.Device, idUser int64) error {
 	query := `
 	INSERT INTO device (name, id_resolution, id_orientation, id_user) 
 	VALUES (?,?,?,?)
@@ -28,7 +28,7 @@ func (r repository) Create(ctx context.Context, device entities.Device) error {
 		device.Name,
 		device.Resolution.Id,
 		device.Orientation,
-		device.User.Id,
+		idUser,
 	)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (r repository) Create(ctx context.Context, device entities.Device) error {
 	return nil
 }
 
-func (r repository) Update(ctx context.Context, device entities.Device) error {
+func (r repository) Update(ctx context.Context, device entities.Device, idUser int64) error {
 	query := `
 	UPDATE device d
 	SET
@@ -53,7 +53,7 @@ func (r repository) Update(ctx context.Context, device entities.Device) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, device.Name, device.Resolution.Id, device.Orientation, device.Id)
+	_, err = stmt.ExecContext(ctx, device.Name, device.Resolution.Id, device.Orientation, device.Id, idUser)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (r repository) Update(ctx context.Context, device entities.Device) error {
 	return nil
 }
 
-func (r repository) Delete(ctx context.Context, device entities.Device) error {
+func (r repository) Delete(ctx context.Context, device entities.Device, idUser int64) error {
 	query := `
 	DELETE FROM device d
 	WHERE id = ? AND id_user = ?
@@ -73,7 +73,7 @@ func (r repository) Delete(ctx context.Context, device entities.Device) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, device.Name, device.Resolution.Id, device.Orientation, device.Id)
+	_, err = stmt.ExecContext(ctx, device.Id, idUser)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (entiti
 		return dev, err
 	}
 
-	dev.Resolution = &res
+	dev.Resolution = res
 
 	return dev, nil
 }

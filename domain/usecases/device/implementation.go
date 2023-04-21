@@ -16,16 +16,16 @@ func NewUseCases(deviceRepo device.Repository) UseCases {
 	}
 }
 
-func (u useCases) Create(ctx context.Context, device entities.Device) error {
-	return u.deviceRepo.Create(ctx, device)
+func (u useCases) Create(ctx context.Context, device entities.Device, idUser int64) error {
+	return u.deviceRepo.Create(ctx, device, idUser)
 }
 
-func (u useCases) Update(ctx context.Context, device entities.Device) error {
-	return u.deviceRepo.Update(ctx, device)
+func (u useCases) Update(ctx context.Context, device entities.Device, idUser int64) error {
+	return u.deviceRepo.Update(ctx, device, idUser)
 }
 
-func (u useCases) Delete(ctx context.Context, device entities.Device) error {
-	return u.deviceRepo.Delete(ctx, device)
+func (u useCases) Delete(ctx context.Context, device entities.Device, idUser int64) error {
+	return u.deviceRepo.Delete(ctx, device, idUser)
 }
 
 func (u useCases) GetAll(ctx context.Context, idUser int64) ([]entities.Device, error) {

@@ -26,8 +26,8 @@ func (n newHTTPDeviceModule) Setup(router *mux.Router) {
 	router.HandleFunc("/devices", n.getAll).Methods("GET")
 	router.HandleFunc("/devices/{id}", n.getById).Methods("GET")
 	router.HandleFunc("/devices", n.create).Methods("POST")
-	router.HandleFunc("/devices", n.update).Methods("PUT")
-	router.HandleFunc("/devices", n.delete).Methods("DELETE")
+	router.HandleFunc("/devices/{id}", n.update).Methods("PUT")
+	router.HandleFunc("/devices/{id}", n.delete).Methods("DELETE")
 }
 
 func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
@@ -44,9 +44,8 @@ func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	dev.User = user
 
-	err = n.useCases.Create(ctx, dev)
+	err = n.useCases.Create(ctx, dev, user.Id)
 	if err != nil {
 		log.Println("[Create] Error", err)
 		http_error.HandleError(w, err)
@@ -68,9 +67,10 @@ func (n newHTTPDeviceModule) update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	dev.User = user
 
-	err = n.useCases.Update(ctx, dev)
+	dev.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+
+	err = n.useCases.Update(ctx, dev, user.Id)
 	if err != nil {
 		log.Println("[Update] Error", err)
 		http_error.HandleError(w, err)
@@ -92,9 +92,10 @@ func (n newHTTPDeviceModule) delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	dev.User = user
 
-	err = n.useCases.Delete(ctx, dev)
+	dev.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+
+	err = n.useCases.Delete(ctx, dev, user.Id)
 	if err != nil {
 		log.Println("[Update] Error", err)
 		http_error.HandleError(w, err)
