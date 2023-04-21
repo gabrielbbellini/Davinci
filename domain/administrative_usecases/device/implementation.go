@@ -2,7 +2,7 @@ package device
 
 import (
 	"base/domain/entities"
-	"base/infrastructure/repositories/device"
+	"base/infrastructure/administrative_repository/device"
 	"context"
 )
 

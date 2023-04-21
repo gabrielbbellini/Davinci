@@ -2,7 +2,7 @@ package user
 
 import (
 	"base/domain/entities"
-	"base/infrastructure/repositories/user"
+	"base/infrastructure/administrative_repository/user"
 )
 
 type useCase struct {

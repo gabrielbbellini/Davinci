@@ -1,7 +1,8 @@
-package view
+package administrative_view
 
 import (
-	"base/domain/usecases/device"
+	"base/domain/administrative_usecases/device"
+	"base/view"
 	"base/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -13,7 +14,7 @@ type newHTTPDeviceModule struct {
 	useCases device.UseCases
 }
 
-func NewHTTPDeviceModule(cases device.UseCases) HttpModule {
+func NewHTTPDeviceModule(cases device.UseCases) view.HttpModule {
 	return &newHTTPDeviceModule{
 		useCases: cases,
 	}
