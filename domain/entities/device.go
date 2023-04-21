@@ -1,12 +1,5 @@
 package entities
 
-type Orientation string
-
-const (
-	OrientationPortrait  Orientation = "portrait"
-	OrientationLandscape Orientation = "landscape"
-)
-
 type Device struct {
 	Id          int64       `json:"id"`
 	Name        string      `json:"name"`
@@ -18,3 +11,10 @@ type Resolution struct {
 	Width  int
 	Height int
 }
+
+type Orientation string
+
+const (
+	OrientationPortrait  Orientation = "portrait"
+	OrientationLandscape Orientation = "landscape"
+)
