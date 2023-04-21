@@ -20,20 +20,20 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r repository) Login(ctx context.Context, credential entities.Credential) error {
+func (r repository) Login(ctx context.Context, credential entities.Credential) (*entities.User, error) {
 	user, err := r.getUserByEmail(ctx, credential.Email)
 	if err != nil {
 		log.Println("[Login] Error getUserByEmail", err)
-		return err
+		return nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Credential.Password), []byte(credential.Password))
 	if err != nil {
 		log.Println("[Login] Error bcrypt.CompareHashAndPassword", err)
-		return http_error.NewForbiddenError("Credenciais inválidas")
+		return nil, http_error.NewInternalServerError(err.Error())
 	}
 
-	return nil
+	return user, err
 }
 
 func (r repository) getUserByEmail(ctx context.Context, email string) (*entities.User, error) {
