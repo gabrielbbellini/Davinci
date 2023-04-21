@@ -50,6 +50,7 @@ func setupDataBase() (*sql.DB, error) {
 func setupMVC(router *mux.Router, db *sql.DB) error {
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	apiRouter.Use(apiMiddleware)
+	apiRouter.Use(authorizationMiddleware)
 
 	deviceRepository := device_repository.NewDeviceRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
@@ -67,5 +68,33 @@ func apiMiddleware(next http.Handler) http.Handler {
 
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
+	})
+}
+
+// authorizationMiddleware check if the user has the cookie with the token and if the token is valid.
+func authorizationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//Check if the user has the cookie with the token
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				//If the user doesn't have the cookie, return an error
+				http.Error(w, "No cookie", http.StatusUnauthorized)
+				return
+			}
+			//If there is an error, return an error
+			http.Error(w, "No cookie", http.StatusUnauthorized)
+			return
+		}
+		//Check if the token is valid
+		if !isTokenValid(cookie.Value) {
+			//If the token is not valid, return an error
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		//Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+
 	})
 }
