@@ -66,8 +66,7 @@ func setupMVC(router *mux.Router, db *sql.DB) error {
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	apiRouter.Use(apiMiddleware)
 
-	authorizationHelper := authorizationHelper{useCases: authorizationUseCases}
-	apiRouter.Use(authorizationHelper.authorizationMiddleware)
+	apiRouter.Use(authorizationMiddleware)
 
 	deviceRepository := device_repository.NewRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
@@ -101,12 +100,8 @@ func apiMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-type authorizationHelper struct {
-	useCases authorization_usecases.UseCases
-}
-
 // authorizationMiddleware check if the user has the cookie with the token and if the token is valid.
-func (a authorizationHelper) authorizationMiddleware(next http.Handler) http.Handler {
+func authorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//Check if the user has the cookie with the token
 		cookie, err := r.Cookie("cookie")
