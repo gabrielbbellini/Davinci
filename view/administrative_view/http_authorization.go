@@ -1,8 +1,9 @@
-package view
+package administrative_view
 
 import (
+	"base/domain/administrative_usecases/authorization"
 	"base/domain/entities"
-	"base/domain/usecases/authorization"
+	"base/view"
 	"base/view/http_error"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
@@ -19,7 +20,7 @@ type newHTTPAuthorizationModule struct {
 	useCases authorization.UseCases
 }
 
-func NewHTTPAuthorization(useCases authorization.UseCases) HttpModule {
+func NewHTTPAuthorization(useCases authorization.UseCases) view.HttpModule {
 	return &newHTTPAuthorizationModule{
 		useCases: useCases,
 	}

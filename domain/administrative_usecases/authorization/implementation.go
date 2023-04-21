@@ -2,7 +2,7 @@ package authorization
 
 import (
 	"base/domain/entities"
-	"base/infrastructure/repositories/authorization"
+	"base/infrastructure/administrative_repository/authorization"
 	"base/view/http_error"
 	"context"
 	"strings"

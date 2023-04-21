@@ -1,8 +1,9 @@
-package view
+package device_view
 
 import (
+	"base/domain/device_usecases/device"
 	"base/domain/entities"
-	"base/domain/usecases/device"
+	"base/view"
 	"base/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -16,7 +17,7 @@ type newHTTPDeviceModule struct {
 	useCases device.UseCases
 }
 
-func NewHTTPDeviceModule(cases device.UseCases) HttpModule {
+func NewHTTPDeviceModule(cases device.UseCases) view.HttpModule {
 	return &newHTTPDeviceModule{
 		useCases: cases,
 	}
