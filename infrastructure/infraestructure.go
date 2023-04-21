@@ -6,6 +6,7 @@ import (
 	authorization_repository "base/infrastructure/repositories/authorization"
 	device_repository "base/infrastructure/repositories/device"
 	"base/view"
+	"base/view/http_error"
 	"database/sql"
 	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
@@ -86,23 +87,25 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			if err == http.ErrNoCookie {
 				//If the user doesn't have the cookie, return an error
-				http.Error(w, "No cookie", http.StatusUnauthorized)
+				log.Println("[authorizationMiddleware] Error http.ErrNoCookie", err)
+				http_error.HandleError(w, http_error.NewUnauthorizedError(err.Error()))
 				return
 			}
 			//If there is an error, return an error
-			http.Error(w, "No cookie", http.StatusUnauthorized)
+			log.Println("[authorizationMiddleware] Error r.Cookie", err)
+			http_error.HandleError(w, http_error.NewUnauthorizedError(err.Error()))
 			return
 		}
 		//Check if the token is valid
 		if !isCookieValid(cookie) {
 			//If the token is not valid, return an error
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			log.Println("[authorizationMiddleware] Error isCookieValid", err)
+			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
 			return
 		}
 
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
-
 	})
 }
 
@@ -119,6 +122,7 @@ func isCookieValid(cookie *http.Cookie) bool {
 	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
+			log.Println("[login] token.Method.(*jwt.SigningMethodHMAC) !ok", err)
 			return nil, nil
 		}
 		return []byte(view.SecretJWTKey), nil
