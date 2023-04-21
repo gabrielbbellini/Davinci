@@ -1,11 +1,31 @@
 CREATE TABLE IF NOT EXISTS user
 (
-    id                      INTEGER       NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name                    VARCHAR(60)   NOT NULL DEFAULT '',
-    email                   VARCHAR(60)   NOT NULL,
-    password                TEXT          NOT NULL,
-    role                    TEXT          NOT NULL,
-    status_code             TINYINT       NOT NULL DEFAULT 0,
-    created_at              DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_at             DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id          INTEGER     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(60) NOT NULL DEFAULT '',
+    email       VARCHAR(60) NOT NULL,
+    password    TEXT        NOT NULL,
+    roleId      INTEGER     NOT NULL REFERENCES role (id),
+    status_code TINYINT     NOT NULL DEFAULT 0,
+    created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS role
+(
+    id          INTEGER     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(20) NOT NULL DEFAULT '',
+    status_code TINYINT     NOT NULL DEFAULT 0,
+    created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_role
+(
+    id_user     INTEGER  NOT NULL,
+    id_role     INTEGER  NOT NULL,
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+ALTER TABLE davinci.user
+    ADD CONSTRAINT role_fk
+        FOREIGN KEY (roleId) REFERENCES davinci.role (id);

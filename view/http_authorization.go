@@ -5,7 +5,9 @@ import (
 	"base/domain/usecases/authorization"
 	"base/view/http_error"
 	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"io"
 	"log"
 	"net/http"
@@ -49,7 +51,32 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	_, err = w.Write([]byte("Success"))
+	// TODO: store secret key in a safe place.
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{})
+	tokenString, err := token.SignedString("super_secret")
+	if err != nil {
+		log.Println("[CreateJWT] Error SignedString", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	secureCookie := securecookie.New([]byte("secret_cookie_key"), nil)
+	encodedToken, err := secureCookie.Encode("cookie", tokenString)
+	if err != nil {
+		log.Println("[CreateJWT] Error Encode", err)
+		http_error.HandleError(w, err)
+		return
+	}
+	cookie := &http.Cookie{
+		Name:     "cookie",
+		Value:    encodedToken,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, cookie)
+
+	_, err = w.Write([]byte(encodedToken))
 	if err != nil {
 		log.Println("[login] Error Write", err)
 		http_error.HandleError(w, err)

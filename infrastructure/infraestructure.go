@@ -1,7 +1,9 @@
 package infrastructure
 
 import (
+	authorization_usecases "base/domain/usecases/authorization"
 	device_usecases "base/domain/usecases/device"
+	authorization_repository "base/infrastructure/repositories/authorization"
 	device_repository "base/infrastructure/repositories/device"
 	"base/view"
 	"database/sql"
@@ -30,7 +32,7 @@ func Setup(router *mux.Router) error {
 
 // SetupDataBase set the connection to the database and set connection settings.
 func setupDataBase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/davinci")
+	db, err := sql.Open("mysql", "root:root@tcp(devserver:3306)/davinci")
 	if err != nil {
 		log.Println("[Setup] Error connecting to database", err)
 		return nil, err
@@ -52,9 +54,12 @@ func setupMVC(router *mux.Router, db *sql.DB) error {
 	apiRouter.Use(apiMiddleware)
 	apiRouter.Use(authorizationMiddleware)
 
-	deviceRepository := device_repository.NewDeviceRepository(db)
-	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
+	authorizationRepository := authorization_repository.NewRepository(db)
+	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
+	view.NewHTTPAuthorization(authorizationUseCases).Setup(router)
 
+	deviceRepository := device_repository.NewRepository(db)
+	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
 	view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
 
 	return nil
@@ -75,7 +80,7 @@ func apiMiddleware(next http.Handler) http.Handler {
 func authorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//Check if the user has the cookie with the token
-		cookie, err := r.Cookie("token")
+		_, err := r.Cookie("token")
 		if err != nil {
 			if err == http.ErrNoCookie {
 				//If the user doesn't have the cookie, return an error
@@ -86,12 +91,12 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "No cookie", http.StatusUnauthorized)
 			return
 		}
-		//Check if the token is valid
-		if !isTokenValid(cookie.Value) {
-			//If the token is not valid, return an error
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
+		////Check if the token is valid
+		//if !isTokenValid(cookie.Value) {
+		//	//If the token is not valid, return an error
+		//	http.Error(w, "Invalid token", http.StatusUnauthorized)
+		//	return
+		//}
 
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)

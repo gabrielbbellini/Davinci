@@ -35,7 +35,7 @@ func (r repository) GetById(ctx context.Context, id int) (entities.Device, error
 	panic("implement me")
 }
 
-func NewDeviceRepository(db *sql.DB) Repository {
+func NewRepository(db *sql.DB) Repository {
 	return &repository{
 		db: db,
 	}
