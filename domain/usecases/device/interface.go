@@ -16,8 +16,8 @@ type UseCases interface {
 	Delete(ctx context.Context, device entities.Device) error
 
 	// GetAll return all devices.
-	GetAll(ctx context.Context) ([]entities.Device, error)
+	GetAll(ctx context.Context, idUser int64) ([]entities.Device, error)
 
 	// GetById return a device by id.
-	GetById(ctx context.Context, id int64) (entities.Device, error)
+	GetById(ctx context.Context, id int64, idUser int64) (entities.Device, error)
 }

@@ -4,6 +4,7 @@ import "base/util"
 
 type Device struct {
 	Id          int64         `json:"id,omitempty"`
+	User        User          `json:"user,omitempty"`
 	Name        string        `json:"name,omitempty"`
 	Resolution  *Resolution   `json:"resolution,omitempty"`
 	Orientation Orientation   `json:"orientation,omitempty"`
