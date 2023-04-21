@@ -13,8 +13,8 @@ type repository struct {
 
 func (r repository) Create(ctx context.Context, presentation entities.Presentation, idUser int64) error {
 	query := `
-	INSERT INTO presentation (name, id_resolution, id_orientation, id_user) 
-	VALUES (?,?,?,?)
+	INSERT INTO presentation (name,id_user) 
+	VALUES (?,?)
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -39,9 +39,7 @@ func (r repository) Update(ctx context.Context, presentation entities.Presentati
 	query := `
 	UPDATE presentation d
 	SET
-	    d.name = ?, 
-	    d.id_resolution = ?, 
-	    d.id_orientation = ?
+	    d.name = ?
 	WHERE id = ? AND id_user = ?
 	`
 
@@ -85,7 +83,6 @@ func (r repository) GetAll(ctx context.Context, idUser int64) ([]entities.Presen
 	query := `
 	SELECT d.id,
 	       d.name,
-	       d.id_orientation,
 	       d.status_code, 
 	       d.created_at, 
 	       d.modified_at
