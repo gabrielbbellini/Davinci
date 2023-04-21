@@ -19,5 +19,5 @@ type UseCases interface {
 	GetAll(ctx context.Context) ([]entities.Device, error)
 
 	// GetById return a device by id.
-	GetById(ctx context.Context, id int) (entities.Device, error)
+	GetById(ctx context.Context, id int64) (entities.Device, error)
 }

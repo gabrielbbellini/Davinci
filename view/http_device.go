@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type newHTTPDeviceModule struct {
@@ -21,6 +22,7 @@ func NewHTTPDeviceModule(cases device.UseCases) HttpModule {
 
 func (n newHTTPDeviceModule) Setup(router *mux.Router) {
 	router.HandleFunc("/devices", n.getAll).Methods("GET")
+	router.HandleFunc("/devices/{id}", n.getById).Methods("GET")
 }
 
 func (n newHTTPDeviceModule) getAll(w http.ResponseWriter, r *http.Request) {
@@ -38,9 +40,35 @@ func (n newHTTPDeviceModule) getAll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	_, err = w.Write(b)
 	if err != nil {
 		log.Println("[getAll] Error Write", err)
+		return
+	}
+}
+
+func (n newHTTPDeviceModule) getById(w http.ResponseWriter, r *http.Request) {
+	deviceId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+
+	ctx := r.Context()
+	devices, err := n.useCases.GetById(ctx, deviceId)
+	if err != nil {
+		log.Println("[getById] Error", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	b, err := json.Marshal(devices)
+	if err != nil {
+		log.Println("[getById] Error Marshal", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = w.Write(b)
+	if err != nil {
+		log.Println("[getById] Error Write", err)
 		return
 	}
 }

@@ -3,21 +3,22 @@ package entities
 import "base/util"
 
 type Device struct {
-	Id          int64         `json:"id"`
-	Name        string        `json:"name"`
-	Resolution  Resolution    `json:"resolution"`
-	Orientation Orientation   `json:"orientation"`
+	Id          int64         `json:"id,omitempty"`
+	Name        string        `json:"name,omitempty"`
+	Resolution  *Resolution   `json:"resolution,omitempty"`
+	Orientation Orientation   `json:"orientation,omitempty"`
 	StatusCode  int8          `json:"statusCode"`
-	ModifiedAt  util.DateTime `json:"modifiedAt"`
-	CreatedAt   util.DateTime `json:"createdAt"`
+	ModifiedAt  util.DateTime `json:"modifiedAt,omitempty"`
+	CreatedAt   util.DateTime `json:"createdAt,omitempty"`
 }
 
 type Resolution struct {
-	Width      int64         `json:"width"`
-	Height     int64         `json:"height"`
-	StatusCode int8          `json:"statusCode"`
-	ModifiedAt util.DateTime `json:"modifiedAt"`
-	CreatedAt  util.DateTime `json:"createdAt"`
+	Id         int64         `json:"id,omitempty"`
+	Width      int64         `json:"width,omitempty"`
+	Height     int64         `json:"height,omitempty"`
+	StatusCode int8          `json:"statusCode,omitempty"`
+	ModifiedAt util.DateTime `json:"modifiedAt,omitempty"`
+	CreatedAt  util.DateTime `json:"createdAt,omitempty"`
 }
 
 type Orientation int
