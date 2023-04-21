@@ -2,7 +2,9 @@ package infrastructure
 
 import (
 	device_usecases "base/domain/usecases/device"
+	resolution_usecases "base/domain/usecases/resolution"
 	device_repository "base/infrastructure/repositories/device"
+	resolution_repository "base/infrastructure/repositories/resolution"
 	"base/view"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
@@ -52,8 +54,11 @@ func setupMVC(router *mux.Router, db *sql.DB) error {
 	apiRouter.Use(apiMiddleware)
 
 	deviceRepository := device_repository.NewDeviceRepository(db)
+	resolutionRepository := resolution_repository.NewResolutionRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
+	resolutionUseCase := resolution_usecases.NewUseCases(resolutionRepository)
 
+	view.NewHTTPResolutionModule(resolutionUseCase).Setup(apiRouter)
 	view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
 
 	return nil

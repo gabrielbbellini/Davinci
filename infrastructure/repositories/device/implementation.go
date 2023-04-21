@@ -38,14 +38,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Device, error) {
 	       d.modified_at
 	FROM device as d
 	`
-
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.QueryContext(ctx)
+	result, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		log.Printf("Error in [QueryContext]: %v", err)
 		return nil, err
