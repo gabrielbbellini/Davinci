@@ -3,8 +3,10 @@ package infrastructure
 import (
 	authorization_usecases "base/domain/usecases/authorization"
 	device_usecases "base/domain/usecases/device"
+	resolution_usecases "base/domain/usecases/resolution"
 	authorization_repository "base/infrastructure/repositories/authorization"
 	device_repository "base/infrastructure/repositories/device"
+	resolution_repository "base/infrastructure/repositories/resolution"
 	"base/view"
 	"base/view/http_error"
 	"database/sql"
@@ -64,7 +66,11 @@ func setupMVC(router *mux.Router, db *sql.DB) error {
 	view.NewHTTPAuthorization(authorizationUseCases).Setup(router)
 
 	deviceRepository := device_repository.NewRepository(db)
+	resolutionRepository := resolution_repository.NewResolutionRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
+	resolutionUseCase := resolution_usecases.NewUseCases(resolutionRepository)
+
+	view.NewHTTPResolutionModule(resolutionUseCase).Setup(apiRouter)
 	view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
 
 	return nil
