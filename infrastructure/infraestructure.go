@@ -7,8 +7,10 @@ import (
 	device_repository "base/infrastructure/repositories/device"
 	"base/view"
 	"database/sql"
+	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"log"
 	"net/http"
 	"time"
@@ -80,7 +82,7 @@ func apiMiddleware(next http.Handler) http.Handler {
 func authorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//Check if the user has the cookie with the token
-		_, err := r.Cookie("token")
+		cookie, err := r.Cookie("cookie")
 		if err != nil {
 			if err == http.ErrNoCookie {
 				//If the user doesn't have the cookie, return an error
@@ -91,15 +93,40 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "No cookie", http.StatusUnauthorized)
 			return
 		}
-		////Check if the token is valid
-		//if !isTokenValid(cookie.Value) {
-		//	//If the token is not valid, return an error
-		//	http.Error(w, "Invalid token", http.StatusUnauthorized)
-		//	return
-		//}
+		//Check if the token is valid
+		if !isCookieValid(cookie) {
+			//If the token is not valid, return an error
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
 
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 
 	})
+}
+
+// isCookieValid check if the token is valid.
+func isCookieValid(cookie *http.Cookie) bool {
+	secureCookie := securecookie.New([]byte(view.SecretJWTKey), nil)
+	var tokenString string
+	err := secureCookie.Decode("token", cookie.Value, &tokenString)
+	if err != nil {
+		log.Println("[login] Error Decode", err)
+		return false
+	}
+
+	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+		if !ok {
+			return nil, nil
+		}
+		return []byte(view.SecretJWTKey), nil
+	})
+	if err != nil {
+		log.Println("[isCookieValid] Error parsing token", err)
+		return false
+	}
+
+	return parsedToken.Valid
 }

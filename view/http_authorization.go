@@ -13,6 +13,8 @@ import (
 	"net/http"
 )
 
+const SecretJWTKey = "secret"
+
 type newHTTPAuthorizationModule struct {
 	useCases authorization.UseCases
 }
@@ -53,30 +55,33 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 
 	// TODO: store secret key in a safe place.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{})
-	tokenString, err := token.SignedString("super_secret")
+	tokenString, err := token.SignedString([]byte(SecretJWTKey))
 	if err != nil {
-		log.Println("[CreateJWT] Error SignedString", err)
+		log.Println("[login] Error SignedString", err)
 		http_error.HandleError(w, err)
 		return
 	}
 
-	secureCookie := securecookie.New([]byte("secret_cookie_key"), nil)
-	encodedToken, err := secureCookie.Encode("cookie", tokenString)
 	if err != nil {
-		log.Println("[CreateJWT] Error Encode", err)
+		log.Println("[login] Error Encode", err)
+		http_error.HandleError(w, err)
+		return
+	}
+	secureCookie := securecookie.New([]byte(SecretJWTKey), nil)
+	encodedTokenString, err := secureCookie.Encode("token", tokenString)
+	if err != nil {
+		log.Println("[login] Error Encode", err)
 		http_error.HandleError(w, err)
 		return
 	}
 	cookie := &http.Cookie{
-		Name:     "cookie",
-		Value:    encodedToken,
-		Path:     "/",
-		Secure:   true,
-		HttpOnly: true,
+		Name:  "cookie",
+		Value: encodedTokenString,
+		Path:  "/",
 	}
 	http.SetCookie(w, cookie)
 
-	_, err = w.Write([]byte(encodedToken))
+	_, err = w.Write([]byte(tokenString))
 	if err != nil {
 		log.Println("[login] Error Write", err)
 		http_error.HandleError(w, err)
