@@ -9,10 +9,10 @@ const (
 
 type Device struct {
 	Id          int64       `json:"id"`
-	TextCode    string      `json:"textCode"`
 	Name        string      `json:"name"`
 	Resolution  Resolution  `json:"resolution"`
 	Orientation Orientation `json:"orientation"`
+	StatusCode  int8        `json:"statusCode"`
 }
 
 type Resolution struct {
