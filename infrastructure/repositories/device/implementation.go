@@ -167,7 +167,7 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (entiti
 	return dev, nil
 }
 
-func NewDeviceRepository(db *sql.DB) Repository {
+func NewRepository(db *sql.DB) Repository {
 	return &repository{
 		db: db,
 	}
