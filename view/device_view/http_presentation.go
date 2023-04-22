@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type newHTTPPresentationModule struct {
@@ -23,8 +22,7 @@ func NewHTTPPresentationModule(cases presentation.UseCases) view.HttpModule {
 }
 
 func (n newHTTPPresentationModule) Setup(router *mux.Router) {
-	router.HandleFunc("/presentations", n.getAll).Methods("GET")
-	router.HandleFunc("/presentations/{id}", n.getById).Methods("GET")
+	router.HandleFunc("/presentations", n.getById).Methods("GET")
 }
 
 func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request) {
@@ -53,11 +51,10 @@ func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request
 }
 
 func (n newHTTPPresentationModule) getById(w http.ResponseWriter, r *http.Request) {
-	presentationId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
-
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	presentations, err := n.useCases.GetById(ctx, presentationId, user.Id)
+	device := ctx.Value("device").(entities.Device)
+	presentations, err := n.useCases.GetById(ctx, device.Id, user.Id)
 	if err != nil {
 		log.Println("[getById] Error", err)
 		http_error.HandleError(w, err)
