@@ -3,8 +3,10 @@ package infrastructure
 import (
 	authorization_usecases "base/domain/device_usecases/authorization"
 	device_usecases "base/domain/device_usecases/device"
+	presentation_usecases "base/domain/device_usecases/presentation"
 	authorization_repository "base/infrastructure/device_repository/authorization"
 	device_repository "base/infrastructure/device_repository/device"
+	presentation_repository "base/infrastructure/device_repository/presentation"
 	user_repository "base/infrastructure/device_repository/user"
 	"base/view/device_view"
 	"base/view/http_error"
@@ -20,6 +22,7 @@ import (
 func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
 	userRepository := user_repository.NewRepository(db)
 	deviceRepository := device_repository.NewRepository(db)
+	presentationRepository := presentation_repository.NewPresentationRepository(db)
 	authorizationRepository := authorization_repository.NewRepository(db)
 
 	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository, userRepository, deviceRepository)
@@ -30,7 +33,9 @@ func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
 	deviceRouter.Use(deviceAuthorizationMiddleware)
 
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
+	presentationUseCases := presentation_usecases.NewUseCases(presentationRepository)
 	device_view.NewHTTPDeviceModule(deviceUseCases).Setup(deviceRouter)
+	device_view.NewHTTPPresentationModule(presentationUseCases).Setup(deviceRouter)
 
 	return nil
 }
