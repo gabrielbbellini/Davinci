@@ -26,7 +26,7 @@ func NewHTTPAuthorization(useCases authorization.UseCases) view.HttpModule {
 }
 
 func (n newHTTPAuthorizationModule) Setup(router *mux.Router) {
-	router.HandleFunc("/login", n.login).Methods("POST")
+	router.HandleFunc("/login", n.login).Methods(http.MethodPost)
 }
 
 func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request) {

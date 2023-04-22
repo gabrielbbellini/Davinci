@@ -22,8 +22,8 @@ func NewHTTPResolutionModule(cases resolution.UseCases) view.HttpModule {
 }
 
 func (n newHTTPResolutionModule) Setup(router *mux.Router) {
-	router.HandleFunc("/resolutions", n.getAll).Methods("GET")
-	router.HandleFunc("/resolutions/{id}", n.getById).Methods("GET")
+	router.HandleFunc("/resolutions", n.getAll).Methods(http.MethodGet)
+	router.HandleFunc("/resolutions/{id}", n.getById).Methods(http.MethodGet)
 }
 
 func (n newHTTPResolutionModule) getAll(w http.ResponseWriter, r *http.Request) {

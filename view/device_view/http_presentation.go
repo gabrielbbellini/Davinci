@@ -22,7 +22,7 @@ func NewHTTPPresentationModule(cases presentation.UseCases) view.HttpModule {
 }
 
 func (n newHTTPPresentationModule) Setup(router *mux.Router) {
-	router.HandleFunc("/presentations", n.getById).Methods("GET")
+	router.HandleFunc("/presentations", n.getById).Methods(http.MethodGet)
 }
 
 func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request) {
