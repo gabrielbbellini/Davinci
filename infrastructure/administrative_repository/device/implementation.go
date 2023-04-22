@@ -4,6 +4,7 @@ import (
 	"base/domain/entities"
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 )
 
@@ -92,13 +93,13 @@ func (r repository) Delete(ctx context.Context, deviceId int64, userId int64) er
 
 func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device, error) {
 	query := `
-	SELECT d.id,
-	       d.name,
-	       d.id_orientation,
-	       d.status_code, 
-	       d.created_at, 
-	       d.modified_at
-	FROM device as d
+	SELECT id,
+	       name,
+	       id_orientation,
+	       status_code, 
+	       created_at, 
+	       modified_at
+	FROM device
 	WHERE id_user = ?
 	`
 	rows, err := r.db.QueryContext(ctx, query, userId)
@@ -121,6 +122,10 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 			&device.ModifiedAt,
 		)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, nil
+			}
+
 			log.Println("[GetAll] Error Scan", err)
 			return nil, err
 		}

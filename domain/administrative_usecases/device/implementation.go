@@ -99,21 +99,27 @@ func (u useCases) Delete(ctx context.Context, deviceId int64, userId int64) erro
 	_, err := u.deviceRepository.GetById(ctx, deviceId, userId)
 	if err != nil {
 		log.Println("[Delete] Error GetById", err)
-		return http_error.NewBadRequestError("Dispositivo não encontrado")
+		return http_error.NewBadRequestError("Dispositivo não encontrado.")
 	}
 
 	return u.deviceRepository.Delete(ctx, deviceId, userId)
 }
 
 func (u useCases) GetAll(ctx context.Context, userId int64) ([]entities.Device, error) {
-	return u.deviceRepository.GetAll(ctx, userId)
+	devices, err := u.deviceRepository.GetAll(ctx, userId)
+	if err != nil {
+		log.Println("[GetAll] Error GetAll", err)
+		return nil, err
+	}
+
+	return devices, nil
 }
 
 func (u useCases) GetById(ctx context.Context, deviceId int64, userId int64) (*entities.Device, error) {
 	device, err := u.deviceRepository.GetById(ctx, deviceId, userId)
 	if err != nil {
 		log.Println("[GetById] Error GetById", err)
-		return nil, http_error.NewBadRequestError("Dispositivo não encontrado")
+		return nil, http_error.NewBadRequestError("Dispositivo não encontrado.")
 	}
 
 	return device, nil
