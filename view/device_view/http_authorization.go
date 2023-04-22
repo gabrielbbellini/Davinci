@@ -12,6 +12,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 const SecretJWTKey = "secret"
@@ -54,16 +55,9 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	deviceByte, err := json.Marshal(*device)
-	if err != nil {
-		log.Println("[login] Error Marshal", err)
-		http_error.HandleError(w, err)
-		return
-	}
-
 	// TODO: store secret key in a safe place.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"device": string(deviceByte),
+		"deviceId": strconv.FormatInt(device.Id, 10),
 	})
 
 	tokenString, err := token.SignedString([]byte(SecretJWTKey))
@@ -90,11 +84,4 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		Value: encodedTokenString,
 	}
 	http.SetCookie(w, cookie)
-
-	_, err = w.Write([]byte(tokenString))
-	if err != nil {
-		log.Println("[login] Error Write", err)
-		http_error.HandleError(w, err)
-		return
-	}
 }

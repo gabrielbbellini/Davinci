@@ -90,11 +90,4 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		Value: encodedTokenString,
 	}
 	http.SetCookie(w, cookie)
-
-	_, err = w.Write([]byte(tokenString))
-	if err != nil {
-		log.Println("[login] Error Write", err)
-		http_error.HandleError(w, err)
-		return
-	}
 }

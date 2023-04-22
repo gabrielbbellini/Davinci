@@ -2,13 +2,12 @@ package authorization
 
 import (
 	"base/domain/entities"
-	"golang.org/x/crypto/bcrypt"
-
 	"base/infrastructure/device_repository/authorization"
-	"base/infrastructure/device_repository/device"
+	device_repository "base/infrastructure/device_repository/device"
 	user_repository "base/infrastructure/device_repository/user"
 	"base/view/http_error"
 	"context"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"strings"
 )
@@ -16,13 +15,13 @@ import (
 type useCases struct {
 	repository       authorization.Repository
 	userRepository   user_repository.Repository
-	deviceRepository device.Repository
+	deviceRepository device_repository.Repository
 }
 
 func NewUseCases(
 	repository authorization.Repository,
 	userRepository user_repository.Repository,
-	deviceRepository device.Repository,
+	deviceRepository device_repository.Repository,
 ) UseCases {
 	return &useCases{
 		repository:       repository,
@@ -40,9 +39,13 @@ func (u useCases) Login(ctx context.Context, credential entities.Credential) (*e
 		return nil, http_error.NewForbiddenError("Credenciais inválidas.")
 	}
 
-	user, err := u.userRepository.GetByEmail(credential.Email)
+	user, err := u.userRepository.GetByEmail(ctx, credential.Email)
 	if err != nil {
 		log.Println("[Login] Error GetByEmail", err)
+		return nil, http_error.NewForbiddenError("Credenciais inválidas.")
+	}
+
+	if user.StatusCode == entities.StatusDeleted {
 		return nil, http_error.NewForbiddenError("Credenciais inválidas.")
 	}
 
@@ -52,5 +55,11 @@ func (u useCases) Login(ctx context.Context, credential entities.Credential) (*e
 		return nil, http_error.NewForbiddenError("Credenciais inválidas.")
 	}
 
-	return nil, err
+	device, err := u.deviceRepository.GetByName(ctx, credential.DeviceName, user.Id)
+	if err != nil {
+		log.Println("[Login] Error GetByName", err)
+		return nil, http_error.NewForbiddenError("Credenciais inválidas.")
+	}
+
+	return device, nil
 }

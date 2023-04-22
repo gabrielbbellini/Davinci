@@ -1,7 +1,10 @@
 package device
 
-import "context"
+import (
+	"base/domain/entities"
+	"context"
+)
 
 type Repository interface {
-	get(ctx context.Context, userId int64, deviceId int64)
+	GetByName(ctx context.Context, deviceName string, userId int64) (*entities.Device, error)
 }

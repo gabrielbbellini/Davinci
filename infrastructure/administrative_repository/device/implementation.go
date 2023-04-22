@@ -72,19 +72,15 @@ func (r repository) Update(ctx context.Context, device entities.Device, userId i
 }
 
 func (r repository) Delete(ctx context.Context, deviceId int64, userId int64) error {
-	query := `
+	//language=sql
+	command := `
 	DELETE FROM device d
 	WHERE id = ? AND id_user = ?
 	`
 
-	stmt, err := r.db.PrepareContext(ctx, query)
+	_, err := r.db.ExecContext(ctx, command, deviceId, userId)
 	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ctx, deviceId, userId)
-	if err != nil {
+		log.Println("[Delete] Error ExecContext")
 		return err
 	}
 
@@ -136,7 +132,8 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 	return devices, nil
 }
 
-func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entities.Device, error) {
+func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (*entities.Device, error) {
+	//language=sql
 	query := `
 	SELECT d.id,
 	       d.name,
@@ -147,7 +144,7 @@ func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entit
 	       d.id_resolution,
 	       r.width,
 	       r.height
-	FROM device as d
+	FROM device d
 		INNER JOIN resolution r on d.id_resolution = r.id
 	WHERE d.id = ? AND d.id_user = ?
 	`
@@ -156,7 +153,7 @@ func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entit
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
-		id,
+		deviceId,
 		userId,
 	).Scan(
 		&device.Id,
@@ -171,6 +168,7 @@ func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entit
 	)
 
 	if err != nil {
+		log.Println("[GetById] Error Scan", err)
 		return nil, err
 	}
 

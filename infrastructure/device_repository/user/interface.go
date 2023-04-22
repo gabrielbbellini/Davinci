@@ -1,7 +1,10 @@
 package user
 
-import "base/domain/entities"
+import (
+	"base/domain/entities"
+	"context"
+)
 
 type Repository interface {
-	GetByEmail(email string) (*entities.User, error)
+	GetByEmail(ctx context.Context, email string) (*entities.User, error)
 }

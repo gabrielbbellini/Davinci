@@ -4,5 +4,5 @@ type Credential struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	RoleId     int64  `json:"roleId"`
-	DeviceName int64  `json:"deviceName"`
+	DeviceName string `json:"deviceName"`
 }
