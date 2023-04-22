@@ -17,9 +17,9 @@ type newHTTPDeviceModule struct {
 	useCases device.UseCases
 }
 
-func NewHTTPDeviceModule(cases device.UseCases) view.HttpModule {
+func NewHTTPDeviceModule(useCases device.UseCases) view.HttpModule {
 	return &newHTTPDeviceModule{
-		useCases: cases,
+		useCases: useCases,
 	}
 }
 

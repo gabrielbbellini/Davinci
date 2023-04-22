@@ -2,6 +2,7 @@ package entities
 
 import "base/util"
 
+const StatusOk = 1
 const StatusDeleted = 2
 
 type User struct {
