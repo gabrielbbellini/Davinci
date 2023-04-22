@@ -38,8 +38,6 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
 			&res.Width,
 			&res.Height,
 			&res.StatusCode,
-			&res.CreatedAt,
-			&res.ModifiedAt,
 		)
 
 		if err != nil {

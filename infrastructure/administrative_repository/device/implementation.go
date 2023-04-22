@@ -114,8 +114,6 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 			&device.Name,
 			&device.Orientation,
 			&device.StatusCode,
-			&device.CreatedAt,
-			&device.ModifiedAt,
 		)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -160,8 +158,6 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 		&device.Name,
 		&device.Orientation,
 		&device.StatusCode,
-		&device.CreatedAt,
-		&device.ModifiedAt,
 		&device.Resolution.Id,
 		&device.Resolution.Width,
 		&device.Resolution.Height,
