@@ -92,9 +92,7 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 	SELECT id,
 	       name,
 	       id_orientation,
-	       status_code, 
-	       created_at, 
-	       modified_at
+	       status_code
 	FROM device
 	WHERE id_user = ?
 	`
@@ -137,8 +135,6 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 	       d.name,
 	       d.id_orientation,
 	       d.status_code, 
-	       d.created_at, 
-	       d.modified_at,
 	       d.id_resolution,
 	       r.width,
 	       r.height
