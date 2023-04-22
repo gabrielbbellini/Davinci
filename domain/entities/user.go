@@ -2,7 +2,7 @@ package entities
 
 import "base/util"
 
-const StatusOk = 1
+const StatusOk = 0
 const StatusDeleted = 2
 
 type User struct {
