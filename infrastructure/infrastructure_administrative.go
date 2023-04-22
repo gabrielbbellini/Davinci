@@ -28,22 +28,29 @@ func SetupAdministrativeModules(router *mux.Router, db *sql.DB) error {
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository, resolutionRepository)
 
 	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
+	administrativeRouter.Use(authorizationMiddleware)
 
-	middleware := AdministrativeMiddleware{administrativeRouter}
-	administrative_view.NewHTTPAuthorization(authorizationUseCases, middleware).Setup(administrativeRouter)
-
+	administrative_view.NewHTTPAuthorization(authorizationUseCases).Setup(administrativeRouter)
 	administrative_view.NewHTTPDeviceModule(deviceUseCases).Setup(administrativeRouter)
 
 	return nil
 }
 
-type AdministrativeMiddleware struct {
-	next http.Handler
-}
-
 // SetupMiddleware check if the user has the cookie with the token and if the token is valid.
-func (administrativeMiddleware AdministrativeMiddleware) SetupMiddleware() http.Handler {
+func authorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pathTemplate, err := mux.CurrentRoute(r).GetPathTemplate()
+		if err != nil {
+			log.Println("[authorizationMiddleware] Error", err)
+			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
+			return
+		}
+
+		if pathTemplate == "/administrative/login" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		//Check if the user has the cookie with the token
 		cookie, err := r.Cookie("cookie")
 		if err != nil {
@@ -99,6 +106,6 @@ func (administrativeMiddleware AdministrativeMiddleware) SetupMiddleware() http.
 		ctx := context.WithValue(r.Context(), "user", user)
 
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
-		administrativeMiddleware.next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

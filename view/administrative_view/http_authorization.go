@@ -3,7 +3,6 @@ package administrative_view
 import (
 	"base/domain/administrative_usecases/authorization"
 	"base/domain/entities"
-	"base/infrastructure"
 	"base/view"
 	"base/view/http_error"
 	"encoding/json"
@@ -18,14 +17,12 @@ import (
 const SecretJWTKey = "secret"
 
 type newHTTPAuthorizationModule struct {
-	useCases   authorization.UseCases
-	middleware infrastructure.AdministrativeMiddleware
+	useCases authorization.UseCases
 }
 
-func NewHTTPAuthorization(useCases authorization.UseCases, middleware infrastructure.AdministrativeMiddleware) view.HttpModule {
+func NewHTTPAuthorization(useCases authorization.UseCases) view.HttpModule {
 	return &newHTTPAuthorizationModule{
-		useCases:   useCases,
-		middleware: middleware,
+		useCases: useCases,
 	}
 }
 
@@ -94,5 +91,4 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 	}
 
 	http.SetCookie(w, cookie)
-	n.middleware.SetupMiddleware()
 }
