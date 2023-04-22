@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const ServerUrl = "10.0.11.84:8000"
+const ServerUrl = "10.0.11.140:8000"
 
 func main() {
 	router := mux.NewRouter()
@@ -22,7 +22,7 @@ func main() {
 	server := &http.Server{
 		Handler: handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "Accept"}),
+			handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "Accept", "Authorization"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "UPDATE"}),
 			handlers.AllowCredentials(),
 		)(router),

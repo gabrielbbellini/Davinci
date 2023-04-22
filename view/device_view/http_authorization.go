@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
 	"io"
 	"log"
 	"net/http"
@@ -67,21 +66,10 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	_, err = w.Write([]byte(tokenString))
 	if err != nil {
-		log.Println("[login] Error Encode", err)
+		log.Println("[login] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}
-	secureCookie := securecookie.New([]byte(SecretJWTKey), nil)
-	encodedTokenString, err := secureCookie.Encode("token", tokenString)
-	if err != nil {
-		log.Println("[login] Error Encode", err)
-		http_error.HandleError(w, err)
-		return
-	}
-	cookie := &http.Cookie{
-		Name:  "cookie",
-		Value: encodedTokenString,
-	}
-	http.SetCookie(w, cookie)
 }
