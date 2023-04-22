@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-const ServerUrl = "10.0.11.84:8000"
+const ServerUrl = "10.0.11.140:8000"
 
 func main() {
 	router := mux.NewRouter()
 	err := infrastructure.Setup(router)
 	if err != nil {
-		log.Println("[main] Error Setup", err)
+		log.Println("[main] Error SetupDeviceModules", err)
 		return
 	}
 

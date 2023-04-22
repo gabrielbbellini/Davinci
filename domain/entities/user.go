@@ -2,6 +2,8 @@ package entities
 
 import "base/util"
 
+const StatusDeleted = 2
+
 type User struct {
 	Id         int64         `json:"id"`
 	Name       string        `json:"name"`

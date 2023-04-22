@@ -8,7 +8,7 @@ type ForbiddenError struct {
 func NewForbiddenError(message string) ForbiddenError {
 	return ForbiddenError{
 		Message: message,
-		Code:    400,
+		Code:    403,
 	}
 }
 

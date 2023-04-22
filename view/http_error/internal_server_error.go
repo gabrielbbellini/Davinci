@@ -8,7 +8,7 @@ type InternalServerError struct {
 func NewInternalServerError(message string) InternalServerError {
 	return InternalServerError{
 		Message: message,
-		Code:    400,
+		Code:    500,
 	}
 }
 

@@ -8,7 +8,7 @@ type UnauthorizedError struct {
 func NewUnauthorizedError(message string) UnauthorizedError {
 	return UnauthorizedError{
 		Message: message,
-		Code:    400,
+		Code:    401,
 	}
 }
 
