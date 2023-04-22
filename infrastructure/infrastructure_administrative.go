@@ -19,20 +19,19 @@ import (
 )
 
 func SetupAdministrativeModules(router *mux.Router, db *sql.DB) error {
-	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
 
 	authorizationRepository := authorization_repository.NewRepository(db)
-	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
-	administrative_view.NewHTTPAuthorization(authorizationUseCases).Setup(administrativeRouter)
-
 	resolutionRepository := resolution.NewResolutionRepository(db)
 	deviceRepository := device_repository.NewRepository(db)
+
+	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository, resolutionRepository)
 
-	apiRouter := administrativeRouter.PathPrefix("/api").Subrouter()
-	apiRouter.Use(administrativeAuthorizationMiddleware)
+	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
+	administrative_view.NewHTTPAuthorization(authorizationUseCases).Setup(administrativeRouter)
 
-	administrative_view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
+	administrativeRouter.Use(administrativeAuthorizationMiddleware)
+	administrative_view.NewHTTPDeviceModule(deviceUseCases).Setup(administrativeRouter)
 
 	return nil
 }

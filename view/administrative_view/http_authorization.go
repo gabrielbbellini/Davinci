@@ -89,5 +89,6 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		Name:  "cookie",
 		Value: encodedTokenString,
 	}
+
 	http.SetCookie(w, cookie)
 }
