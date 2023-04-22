@@ -30,7 +30,7 @@ func (n newHTTPPresentationModule) Setup(router *mux.Router) {
 func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	resolution := ctx.Value("user").(entities.Resolution)
+	resolution := ctx.Value("resolution").(entities.Resolution)
 	presentations, err := n.useCases.GetAll(ctx, user.Id, resolution.Id)
 	if err != nil {
 		log.Println("[getAll] Error", err)
