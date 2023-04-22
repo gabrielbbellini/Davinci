@@ -18,7 +18,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
 	SELECT id,
 	       width,
 	       height,
-	       status_code, 
+	       status_code 
 	FROM resolution as r
 	`
 	rows, err := r.db.QueryContext(ctx, query)

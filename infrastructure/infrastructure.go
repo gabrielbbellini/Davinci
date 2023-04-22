@@ -31,7 +31,7 @@ func Setup(router *mux.Router) error {
 
 // SetupDataBase set the connection to the database and set connection settings.
 func setupDataBase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:root@tcp(devserver:3306)/davinci")
+	db, err := sql.Open("mysql", "root:root@tcp(devserver:3306)/davinci?parseTime=true")
 	if err != nil {
 		log.Println("[Setup] Error connecting to database", err)
 		return nil, err

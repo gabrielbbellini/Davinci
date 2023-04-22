@@ -40,13 +40,13 @@ func (n newHTTPPresentationModule) create(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var dev entities.Presentation
-	err = json.Unmarshal(read, &dev)
+	var presentationRequest entities.Presentation
+	err = json.Unmarshal(read, &presentationRequest)
 	if err != nil {
 		return
 	}
 
-	err = n.useCases.Create(ctx, dev, user.Id)
+	err = n.useCases.Create(ctx, presentationRequest, user.Id)
 	if err != nil {
 		log.Println("[Create] Error", err)
 		http_error.HandleError(w, err)
@@ -63,15 +63,15 @@ func (n newHTTPPresentationModule) update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var dev entities.Presentation
-	err = json.Unmarshal(read, &dev)
+	var presentationRequest entities.Presentation
+	err = json.Unmarshal(read, &presentationRequest)
 	if err != nil {
 		return
 	}
 
-	dev.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	presentationRequest.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 
-	err = n.useCases.Update(ctx, dev, user.Id)
+	err = n.useCases.Update(ctx, presentationRequest, user.Id)
 	if err != nil {
 		log.Println("[Update] Error", err)
 		http_error.HandleError(w, err)
@@ -82,21 +82,17 @@ func (n newHTTPPresentationModule) update(w http.ResponseWriter, r *http.Request
 func (n newHTTPPresentationModule) delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	request := r.Body
-	read, err := io.ReadAll(request)
+
+	var presentationRequest entities.Presentation
+
+	id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
+		log.Println("[Update] Error converting id", err)
 		return
 	}
+	presentationRequest.Id = id
 
-	var dev entities.Presentation
-	err = json.Unmarshal(read, &dev)
-	if err != nil {
-		return
-	}
-
-	dev.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
-
-	err = n.useCases.Delete(ctx, dev, user.Id)
+	err = n.useCases.Delete(ctx, presentationRequest, user.Id)
 	if err != nil {
 		log.Println("[Update] Error", err)
 		http_error.HandleError(w, err)

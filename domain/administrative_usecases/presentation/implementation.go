@@ -36,7 +36,10 @@ func (u useCases) GetById(
 	ctx context.Context,
 	id int64,
 	idUser int64,
-) (entities.Presentation, error) {
+) (
+	*entities.Presentation,
+	error,
+) {
 	return u.presentationRepo.GetById(
 		ctx,
 		id,

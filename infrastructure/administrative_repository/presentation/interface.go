@@ -19,5 +19,5 @@ type Repository interface {
 	GetAll(ctx context.Context, idUser int64) ([]entities.Presentation, error)
 
 	// GetById return a presentation by id.
-	GetById(ctx context.Context, id int64, idUser int64) (entities.Presentation, error)
+	GetById(ctx context.Context, id int64, idUser int64) (*entities.Presentation, error)
 }

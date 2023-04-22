@@ -26,6 +26,7 @@ func (r repository) Create(ctx context.Context, device entities.Device, userId i
 
 	stmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
+		log.Println("[Update] Error PrepareContext", err)
 		return err
 	}
 	defer stmt.Close()
@@ -38,6 +39,7 @@ func (r repository) Create(ctx context.Context, device entities.Device, userId i
 		userId,
 	)
 	if err != nil {
+		log.Println("[Create] Error ExecContext", err)
 		return err
 	}
 
