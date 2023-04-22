@@ -18,7 +18,6 @@ func NewHTTPDeviceModule(cases device.UseCases) view.HttpModule {
 }
 
 func (n newHTTPDeviceModule) Setup(router *mux.Router) {
-	router.HandleFunc("/device/{id}", n.get).Methods("GET")
 }
 
 func (n newHTTPDeviceModule) get(w http.ResponseWriter, r *http.Request) {

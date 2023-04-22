@@ -2,8 +2,9 @@ package device
 
 import (
 	"base/domain/entities"
-	"base/infrastructure/administrative_repository/device"
+	deviceRepository "base/infrastructure/administrative_repository/device"
 	"base/infrastructure/administrative_repository/resolution"
+
 	"base/view/http_error"
 	"context"
 	"log"
@@ -11,11 +12,11 @@ import (
 )
 
 type useCases struct {
-	deviceRepository     device.Repository
+	deviceRepository     deviceRepository.Repository
 	resolutionRepository resolution.Repository
 }
 
-func NewUseCases(deviceRepository device.Repository, repositoryRepository resolution.Repository) UseCases {
+func NewUseCases(deviceRepository deviceRepository.Repository, repositoryRepository resolution.Repository) UseCases {
 	return &useCases{
 		deviceRepository:     deviceRepository,
 		resolutionRepository: repositoryRepository,
@@ -95,16 +96,25 @@ func (u useCases) Update(ctx context.Context, device entities.Device, userId int
 }
 
 func (u useCases) Delete(ctx context.Context, deviceId int64, userId int64) error {
-	//TODO implement me
-	panic("implement me")
+	_, err := u.deviceRepository.GetById(ctx, deviceId, userId)
+	if err != nil {
+		log.Println("[Delete] Error GetById", err)
+		return http_error.NewBadRequestError("Dispositivo não encontrado")
+	}
+
+	return u.deviceRepository.Delete(ctx, deviceId, userId)
 }
 
 func (u useCases) GetAll(ctx context.Context, userId int64) ([]entities.Device, error) {
-	//TODO implement me
-	panic("implement me")
+	return u.deviceRepository.GetAll(ctx, userId)
 }
 
-func (u useCases) GetById(ctx context.Context, deviceId int64, userId int64) (entities.Device, error) {
-	//TODO implement me
-	panic("implement me")
+func (u useCases) GetById(ctx context.Context, deviceId int64, userId int64) (*entities.Device, error) {
+	device, err := u.deviceRepository.GetById(ctx, deviceId, userId)
+	if err != nil {
+		log.Println("[GetById] Error GetById", err)
+		return nil, http_error.NewBadRequestError("Dispositivo não encontrado")
+	}
+
+	return device, nil
 }

@@ -5,6 +5,7 @@ import (
 	device_usecases "base/domain/device_usecases/device"
 	authorization_repository "base/infrastructure/device_repository/authorization"
 	device_repository "base/infrastructure/device_repository/device"
+	user_repository "base/infrastructure/device_repository/user"
 	"base/view/device_view"
 	"base/view/http_error"
 	"context"
@@ -19,14 +20,16 @@ import (
 func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
 	deviceRouter := router.PathPrefix("/device").Subrouter()
 
+	userRepository := user_repository.NewRepository(db)
+	deviceRepository := device_repository.NewRepository(db)
+
 	authorizationRepository := authorization_repository.NewRepository(db)
-	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
+	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository, userRepository, deviceRepository)
 	device_view.NewHTTPAuthorization(authorizationUseCases).Setup(deviceRouter)
 
 	apiRouter := deviceRouter.PathPrefix("/api").Subrouter()
 	apiRouter.Use(deviceAuthorizationMiddleware)
 
-	deviceRepository := device_repository.NewRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
 	device_view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
 

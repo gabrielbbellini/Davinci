@@ -47,14 +47,14 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := n.useCases.Login(ctx, credentials)
+	device, err := n.useCases.Login(ctx, credentials)
 	if err != nil {
 		log.Println("[login] Error Login", err)
 		http_error.HandleError(w, err)
 		return
 	}
 
-	userByte, err := json.Marshal(*user)
+	deviceByte, err := json.Marshal(*device)
 	if err != nil {
 		log.Println("[login] Error Marshal", err)
 		http_error.HandleError(w, err)
@@ -63,7 +63,7 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 
 	// TODO: store secret key in a safe place.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": string(userByte),
+		"device": string(deviceByte),
 	})
 
 	tokenString, err := token.SignedString([]byte(SecretJWTKey))
@@ -88,7 +88,6 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 	cookie := &http.Cookie{
 		Name:  "cookie",
 		Value: encodedTokenString,
-		Path:  "/",
 	}
 	http.SetCookie(w, cookie)
 

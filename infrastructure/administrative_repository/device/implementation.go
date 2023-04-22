@@ -70,7 +70,7 @@ func (r repository) Update(ctx context.Context, device entities.Device, userId i
 	return nil
 }
 
-func (r repository) Delete(ctx context.Context, device entities.Device, userId int64) error {
+func (r repository) Delete(ctx context.Context, deviceId int64, userId int64) error {
 	query := `
 	DELETE FROM device d
 	WHERE id = ? AND id_user = ?
@@ -82,7 +82,7 @@ func (r repository) Delete(ctx context.Context, device entities.Device, userId i
 	}
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, device.Id, userId)
+	_, err = stmt.ExecContext(ctx, deviceId, userId)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 	return devices, nil
 }
 
-func (r repository) GetById(ctx context.Context, id int64, userId int64) (entities.Device, error) {
+func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entities.Device, error) {
 	query := `
 	SELECT d.id,
 	       d.name,
@@ -166,8 +166,8 @@ func (r repository) GetById(ctx context.Context, id int64, userId int64) (entiti
 	)
 
 	if err != nil {
-		return device, err
+		return nil, err
 	}
 
-	return device, nil
+	return &device, nil
 }
