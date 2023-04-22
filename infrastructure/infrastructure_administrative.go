@@ -61,24 +61,9 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//Check if the user has the cookie with the token
-		cookie, err := r.Cookie("cookie")
+		token, err := getTokenFromRequest(r)
 		if err != nil {
-			if err == http.ErrNoCookie {
-				//If the user doesn't have the cookie, return an error
-				log.Println("[authorizationMiddleware] Error http.ErrNoCookie", err)
-				http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
-				return
-			}
-			//If there is an error, return an error
-			log.Println("[authorizationMiddleware] Error r.Cookie", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
-			return
-		}
-
-		token, err := getTokenFromCookie(cookie)
-		if err != nil {
-			log.Println("[authorizationMiddleware] Error getTokenFromCookie", err)
+			log.Println("[authorizationMiddleware] Error getTokenFromRequest", err)
 			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
 			return
 		}

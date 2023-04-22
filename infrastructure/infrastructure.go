@@ -7,9 +7,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -82,26 +82,25 @@ func rootMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// getTokenFromCookie get the token from the cookie.
-func getTokenFromCookie(cookie *http.Cookie) (*jwt.Token, error) {
-	secureCookie := securecookie.New([]byte(administrative_view.SecretJWTKey), nil)
-	var tokenString string
-	err := secureCookie.Decode("token", cookie.Value, &tokenString)
-	if err != nil {
-		log.Println("[login] Error Decode", err)
-		return nil, err
+// getTokenFromRequest get the token from the cookie.
+func getTokenFromRequest(r *http.Request) (*jwt.Token, error) {
+	splitToken := strings.Split(r.Header.Get("Authorization"), "Bearer ")
+	if len(splitToken) != 2 {
+		log.Println("[getTokenFromRequest] Error len(splitToken) == 0")
+		return nil, errors.New("error Authorization Bearer not valid")
 	}
+	tokenString := splitToken[1]
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
-			log.Println("[login] token.Method.(*jwt.SigningMethodHMAC) !ok", err)
+			log.Println("[getTokenFromRequest] token.Method.(*jwt.SigningMethodHMAC) !ok")
 			return nil, errors.New("error parsing token")
 		}
 		return []byte(administrative_view.SecretJWTKey), nil
 	})
 	if err != nil {
-		log.Println("[isCookieValid] Error parsing token", err)
+		log.Println("[getTokenFromRequest] Error parsing token", err)
 		return nil, err
 	}
 
