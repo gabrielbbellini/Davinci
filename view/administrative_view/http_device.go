@@ -82,28 +82,17 @@ func (n newHTTPDeviceModule) update(w http.ResponseWriter, r *http.Request) {
 func (n newHTTPDeviceModule) delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	request := r.Body
-	read, err := io.ReadAll(request)
-	if err != nil {
-		return
-	}
 
-	var dev entities.Device
-	err = json.Unmarshal(read, &dev)
-	if err != nil {
-		return
-	}
-
-	dev.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	deviceId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
 		log.Println("[delete] Error ParseInt")
 		http_error.HandleError(w, err)
 		return
 	}
 
-	err = n.useCases.Delete(ctx, dev.Id, user.Id)
+	err = n.useCases.Delete(ctx, deviceId, user.Id)
 	if err != nil {
-		log.Println("[Update] Error", err)
+		log.Println("[delete] Error Delete", err)
 		http_error.HandleError(w, err)
 		return
 	}
