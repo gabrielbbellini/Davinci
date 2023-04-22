@@ -1,7 +1,8 @@
-package view
+package administrative_view
 
 import (
-	"base/domain/usecases/resolution"
+	"base/domain/administrative_usecases/resolution"
+	"base/view"
 	"base/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -14,7 +15,7 @@ type newHTTPResolutionModule struct {
 	useCases resolution.UseCases
 }
 
-func NewHTTPResolutionModule(cases resolution.UseCases) HttpModule {
+func NewHTTPResolutionModule(cases resolution.UseCases) view.HttpModule {
 	return &newHTTPResolutionModule{
 		useCases: cases,
 	}

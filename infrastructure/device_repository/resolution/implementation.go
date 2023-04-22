@@ -15,25 +15,25 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
 	var resolutions []entities.Resolution
 
 	query := `
-	SELECT r.id,
-	       r.width,
-	       r.height,
-	       r.status_code, 
-	       r.created_at, 
-	       r.modified_at
+	SELECT id,
+	       width,
+	       height,
+	       status_code, 
+	       created_at, 
+	       modified_at
 	FROM resolution as r
 	`
-	result, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		log.Printf("Error in [QueryContext]: %v", err)
 		return nil, err
 	}
-	defer result.Close()
+	defer rows.Close()
 
-	for result.Next() {
+	for rows.Next() {
 		var res entities.Resolution
 
-		err = result.Scan(
+		err = rows.Scan(
 			&res.Id,
 			&res.Width,
 			&res.Height,

@@ -18,13 +18,13 @@ import (
 
 func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
 	deviceRouter := router.PathPrefix("/device").Subrouter()
-	deviceRouter.Use(deviceAuthorizationMiddleware)
 
 	authorizationRepository := authorization_repository.NewRepository(db)
 	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
 	device_view.NewHTTPAuthorization(authorizationUseCases).Setup(deviceRouter)
 
 	apiRouter := deviceRouter.PathPrefix("/api").Subrouter()
+	apiRouter.Use(deviceAuthorizationMiddleware)
 
 	deviceRepository := device_repository.NewRepository(db)
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)

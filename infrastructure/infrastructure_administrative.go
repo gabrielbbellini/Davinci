@@ -6,6 +6,7 @@ import (
 	"base/domain/entities"
 	authorization_repository "base/infrastructure/administrative_repository/authorization"
 	device_repository "base/infrastructure/administrative_repository/device"
+	"base/infrastructure/administrative_repository/resolution"
 	"base/view/administrative_view"
 	"base/view/http_error"
 	"context"
@@ -19,16 +20,18 @@ import (
 
 func SetupAdministrativeModules(router *mux.Router, db *sql.DB) error {
 	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
-	administrativeRouter.Use(administrativeAuthorizationMiddleware)
 
 	authorizationRepository := authorization_repository.NewRepository(db)
 	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
 	administrative_view.NewHTTPAuthorization(authorizationUseCases).Setup(administrativeRouter)
 
+	resolutionRepository := resolution.NewResolutionRepository(db)
 	deviceRepository := device_repository.NewRepository(db)
-	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
+	deviceUseCases := device_usecases.NewUseCases(deviceRepository, resolutionRepository)
 
 	apiRouter := administrativeRouter.PathPrefix("/api").Subrouter()
+	apiRouter.Use(administrativeAuthorizationMiddleware)
+
 	administrative_view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
 
 	return nil
