@@ -2,6 +2,7 @@ package main
 
 import (
 	"base/infrastructure"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -19,7 +20,12 @@ func main() {
 	}
 
 	server := &http.Server{
-		Handler:      router,
+		Handler: handlers.CORS(
+			handlers.AllowedOrigins([]string{"*"}),
+			handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "Accept"}),
+			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "UPDATE"}),
+			handlers.AllowCredentials(),
+		)(router),
 		Addr:         ServerUrl,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,

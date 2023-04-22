@@ -18,20 +18,19 @@ import (
 )
 
 func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
-	deviceRouter := router.PathPrefix("/device").Subrouter()
-
 	userRepository := user_repository.NewRepository(db)
 	deviceRepository := device_repository.NewRepository(db)
-
 	authorizationRepository := authorization_repository.NewRepository(db)
+
 	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository, userRepository, deviceRepository)
+
+	deviceRouter := router.PathPrefix("/device").Subrouter()
 	device_view.NewHTTPAuthorization(authorizationUseCases).Setup(deviceRouter)
 
-	apiRouter := deviceRouter.PathPrefix("/api").Subrouter()
-	apiRouter.Use(deviceAuthorizationMiddleware)
+	deviceRouter.Use(deviceAuthorizationMiddleware)
 
 	deviceUseCases := device_usecases.NewUseCases(deviceRepository)
-	device_view.NewHTTPDeviceModule(deviceUseCases).Setup(apiRouter)
+	device_view.NewHTTPDeviceModule(deviceUseCases).Setup(deviceRouter)
 
 	return nil
 }
@@ -39,6 +38,18 @@ func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
 // deviceAuthorizationMiddleware check if the user has the cookie with the token and if the token is valid.
 func deviceAuthorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pathTemplate, err := mux.CurrentRoute(r).GetPathTemplate()
+		if err != nil {
+			log.Println("[deviceAuthorizationMiddleware] Error", err)
+			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
+			return
+		}
+
+		if pathTemplate == "/device/login" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		//Check if the user has the cookie with the token
 		cookie, err := r.Cookie("cookie")
 		if err != nil {
