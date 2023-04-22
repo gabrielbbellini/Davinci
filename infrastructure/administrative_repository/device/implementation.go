@@ -82,7 +82,7 @@ func (r repository) Delete(ctx context.Context, deviceId int64, userId int64) er
 	  AND id_user = ?
 	`
 
-	_, err := r.db.ExecContext(ctx, command, deviceId, userId)
+	_, err := r.db.ExecContext(ctx, command, entities.StatusDeleted, deviceId, userId)
 	if err != nil {
 		log.Println("[Delete] Error ExecContext", err)
 		return err
