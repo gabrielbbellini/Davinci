@@ -42,7 +42,7 @@ func (u useCases) Create(ctx context.Context, device entities.Device, userId int
 
 	var isResolutionValid bool
 	for _, it := range resolutions {
-		if it == device.Resolution {
+		if it.Id == device.Resolution.Id {
 			isResolutionValid = true
 			break
 		}
