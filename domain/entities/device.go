@@ -24,6 +24,6 @@ type Resolution struct {
 type Orientation int
 
 const (
-	OrientationPortrait  Orientation = 0
-	OrientationLandscape Orientation = 1
+	OrientationPortrait  Orientation = 1
+	OrientationLandscape Orientation = 0
 )
