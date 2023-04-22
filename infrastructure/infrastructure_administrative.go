@@ -88,6 +88,7 @@ func administrativeAuthorizationMiddleware(next http.Handler) http.Handler {
 		err = json.Unmarshal([]byte(userString.(string)), &user)
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error json.Unmarshal", err)
+			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
 			return
 		}
 

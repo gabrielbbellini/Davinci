@@ -8,7 +8,7 @@ type NotFoundError struct {
 func NewNotFoundError(message string) NotFoundError {
 	return NotFoundError{
 		Message: message,
-		Code:    400,
+		Code:    404,
 	}
 }
 
