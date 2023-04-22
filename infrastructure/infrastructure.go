@@ -74,6 +74,9 @@ func rootMiddleware(next http.Handler) http.Handler {
 		//Set the origin to allow all.
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
+		//Set the valid methods to all.
+		w.Header().Set("Access-Control-Allow-Methods", "*")
+
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
