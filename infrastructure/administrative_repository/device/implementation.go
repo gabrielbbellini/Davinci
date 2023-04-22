@@ -89,11 +89,14 @@ func (r repository) Delete(ctx context.Context, deviceId int64, userId int64) er
 
 func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device, error) {
 	query := `
-	SELECT id,
-	       name,
-	       id_orientation,
-	       status_code
-	FROM device
+	SELECT d.id,
+	       d.name,
+	       d.id_orientation,
+	       d.status_code,
+		   r.width,
+		   r.height
+	FROM device d
+		INNER JOIN resolution r on d.id_resolution = r.id
 	WHERE id_user = ?
 	`
 	rows, err := r.db.QueryContext(ctx, query, userId)
@@ -112,6 +115,8 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 			&device.Name,
 			&device.Orientation,
 			&device.StatusCode,
+			&device.Resolution.Width,
+			&device.Resolution.Height,
 		)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -142,8 +147,8 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 		INNER JOIN resolution r on d.id_resolution = r.id
 	WHERE d.id = ? AND d.id_user = ?
 	`
-	var device entities.Device
 
+	var device entities.Device
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
