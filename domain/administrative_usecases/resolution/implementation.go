@@ -1,18 +1,21 @@
 package resolution
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/device_repository/resolution"
 	"context"
+	"davinci/domain/entities"
+	"davinci/infrastructure/device_repository/resolution"
+	"davinci/settings"
 )
 
 type useCases struct {
 	resolutionRepository resolution.Repository
+	settings             settings.Settings
 }
 
-func NewUseCases(resolutionRepo resolution.Repository) UseCases {
+func NewUseCases(settings settings.Settings, resolutionRepo resolution.Repository) UseCases {
 	return &useCases{
 		resolutionRepository: resolutionRepo,
+		settings:             settings,
 	}
 }
 

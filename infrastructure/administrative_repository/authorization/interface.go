@@ -1,7 +1,7 @@
 package authorization
 
 import (
-	"base/domain/entities"
+	"davinci/domain/entities"
 	"context"
 )
 

@@ -1,20 +1,23 @@
 package device
 
 import (
-	"base/domain/entities"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
+	"davinci/settings"
 	"errors"
 	"log"
 )
 
 type repository struct {
-	db *sql.DB
+	db       *sql.DB
+	settings settings.Settings
 }
 
-func NewRepository(db *sql.DB) Repository {
+func NewRepository(settings settings.Settings, db *sql.DB) Repository {
 	return &repository{
-		db: db,
+		db:       db,
+		settings: settings,
 	}
 }
 
@@ -34,7 +37,7 @@ func (r repository) Create(ctx context.Context, device entities.Device, userId i
 	_, err = stmt.ExecContext(
 		ctx,
 		device.Name,
-		device.Resolution.Id,
+		device.ResolutionId,
 		device.Orientation,
 		userId,
 	)
@@ -60,7 +63,7 @@ func (r repository) Update(ctx context.Context, device entities.Device, userId i
 		ctx,
 		command,
 		device.Name,
-		device.Resolution.Id,
+		device.ResolutionId,
 		device.Orientation,
 		device.Id,
 		userId,
@@ -97,10 +100,8 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 	       d.name,
 	       d.id_orientation,
 	       d.status_code,
-		   r.width,
-		   r.height
+		   d.id_resolution
 	FROM device d
-		INNER JOIN resolution r on d.id_resolution = r.id
 	WHERE id_user = ? AND 
 	      d.status_code = ?
 	`
@@ -120,8 +121,7 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 			&device.Name,
 			&device.Orientation,
 			&device.StatusCode,
-			&device.Resolution.Width,
-			&device.Resolution.Height,
+			&device.ResolutionId,
 		)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -145,11 +145,8 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 	       d.name,
 	       d.id_orientation,
 	       d.status_code, 
-	       d.id_resolution,
-	       r.width,
-	       r.height
+	       d.id_resolution
 	FROM device d
-		INNER JOIN resolution r on d.id_resolution = r.id
 	WHERE d.id = ? AND 
 	      d.id_user = ? AND
 	      d.status_code = ?
@@ -167,9 +164,7 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 		&device.Name,
 		&device.Orientation,
 		&device.StatusCode,
-		&device.Resolution.Id,
-		&device.Resolution.Width,
-		&device.Resolution.Height,
+		&device.ResolutionId,
 	)
 
 	if err != nil {

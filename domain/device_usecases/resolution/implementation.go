@@ -1,8 +1,8 @@
 package resolution
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/device_repository/resolution"
+	"davinci/domain/entities"
+	"davinci/infrastructure/device_repository/resolution"
 	"context"
 )
 

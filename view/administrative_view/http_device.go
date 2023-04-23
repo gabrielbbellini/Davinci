@@ -1,10 +1,11 @@
 package administrative_view
 
 import (
-	"base/domain/administrative_usecases/device"
-	"base/domain/entities"
-	"base/view"
-	"base/view/http_error"
+	"davinci/domain/administrative_usecases/device"
+	"davinci/domain/entities"
+	"davinci/settings"
+	"davinci/view"
+	"davinci/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io"
@@ -15,11 +16,13 @@ import (
 
 type newHTTPDeviceModule struct {
 	useCases device.UseCases
+	settings settings.Settings
 }
 
-func NewHTTPDeviceModule(useCases device.UseCases) view.HttpModule {
+func NewHTTPDeviceModule(settings settings.Settings, useCases device.UseCases) view.HttpModule {
 	return &newHTTPDeviceModule{
 		useCases: useCases,
+		settings: settings,
 	}
 }
 
@@ -34,21 +37,32 @@ func (n newHTTPDeviceModule) Setup(router *mux.Router) {
 func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	request := r.Body
-	read, err := io.ReadAll(request)
+
+	read, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Println("[create] Error ReadAll", err)
+		http_error.HandleError(w, err)
 		return
 	}
 
 	var dev entities.Device
 	err = json.Unmarshal(read, &dev)
 	if err != nil {
+		log.Println("[create] Error Unmarshal", err)
+		http_error.HandleError(w, http_error.NewBadRequestError("dispositivo inválido"))
 		return
 	}
 
 	err = n.useCases.Create(ctx, dev, user.Id)
 	if err != nil {
 		log.Println("[Create] Error", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	_, err = w.Write([]byte("success"))
+	if err != nil {
+		log.Println("[create] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}

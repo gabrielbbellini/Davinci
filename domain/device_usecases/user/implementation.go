@@ -1,8 +1,8 @@
 package user
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/administrative_repository/user"
+	"davinci/domain/entities"
+	"davinci/infrastructure/administrative_repository/user"
 )
 
 type useCase struct {

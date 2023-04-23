@@ -1,8 +1,9 @@
 package infrastructure
 
 import (
-	"base/view/administrative_view"
 	"database/sql"
+	"davinci/settings"
+	"davinci/view/administrative_view"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
@@ -13,14 +14,14 @@ import (
 	"time"
 )
 
-func Setup(router *mux.Router) error {
-	db, err := setupDataBase()
+func Setup(settings settings.Settings, router *mux.Router) error {
+	db, err := setupDataBase(settings)
 	if err != nil {
 		log.Println("[Setup] Error setupDataBase", err)
 		return err
 	}
 
-	err = setupModules(router, db)
+	err = setupModules(settings, router, db)
 	if err != nil {
 		log.Println("[Setup] Error setupModules", err)
 		return err
@@ -29,9 +30,9 @@ func Setup(router *mux.Router) error {
 	return nil
 }
 
-// SetupDataBase set the connection to the database and set connection settings.
-func setupDataBase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:root@tcp(devserver:3306)/davinci?parseTime=true")
+// SetupDataBase set the connection to the database and set connection entities.go.
+func setupDataBase(settings settings.Settings) (*sql.DB, error) {
+	db, err := sql.Open("mysql", settings.GetDBSource())
 	if err != nil {
 		log.Println("[Setup] Error connecting to database", err)
 		return nil, err
@@ -48,17 +49,18 @@ func setupDataBase() (*sql.DB, error) {
 }
 
 // setupModules set the MVC structure for the application.
-func setupModules(router *mux.Router, db *sql.DB) error {
+func setupModules(settings settings.Settings, router *mux.Router, db *sql.DB) error {
 	router.Use(rootMiddleware)
 
-	err := SetupAdministrativeModules(router, db)
+	err := setupAdministrativeModules(settings, router, db)
 	if err != nil {
-		log.Println("[SetupMVC] Error SetupAdministrativeModules", err)
+		log.Println("[SetupMVC] Error setupAdministrativeModules", err)
 		return err
 	}
-	err = SetupDeviceModules(router, db)
+
+	err = setupDeviceModules(settings, router, db)
 	if err != nil {
-		log.Println("[SetupMVC] Error SetupDeviceModules", err)
+		log.Println("[SetupMVC] Error setupDeviceModules", err)
 		return err
 	}
 

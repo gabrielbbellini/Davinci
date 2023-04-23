@@ -1,6 +1,6 @@
 package entities
 
-import "base/util"
+import "davinci/util"
 
 type Presentation struct {
 	Id         int64         `json:"id"`

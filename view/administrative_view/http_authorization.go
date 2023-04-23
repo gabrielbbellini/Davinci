@@ -1,10 +1,11 @@
 package administrative_view
 
 import (
-	"base/domain/administrative_usecases/authorization"
-	"base/domain/entities"
-	"base/view"
-	"base/view/http_error"
+	"davinci/domain/administrative_usecases/authorization"
+	"davinci/domain/entities"
+	"davinci/settings"
+	"davinci/view"
+	"davinci/view/http_error"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -17,11 +18,13 @@ const SecretJWTKey = "secret"
 
 type newHTTPAuthorizationModule struct {
 	useCases authorization.UseCases
+	settings settings.Settings
 }
 
-func NewHTTPAuthorization(useCases authorization.UseCases) view.HttpModule {
+func NewHTTPAuthorization(settings settings.Settings, useCases authorization.UseCases) view.HttpModule {
 	return &newHTTPAuthorizationModule{
 		useCases: useCases,
+		settings: settings,
 	}
 }
 

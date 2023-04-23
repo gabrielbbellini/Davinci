@@ -1,10 +1,10 @@
 package device_view
 
 import (
-	"base/domain/device_usecases/presentation"
-	"base/domain/entities"
-	"base/view"
-	"base/view/http_error"
+	"davinci/domain/device_usecases/presentation"
+	"davinci/domain/entities"
+	"davinci/view"
+	"davinci/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"

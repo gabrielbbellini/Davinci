@@ -1,9 +1,10 @@
 package administrative_view
 
 import (
-	"base/domain/administrative_usecases/resolution"
-	"base/view"
-	"base/view/http_error"
+	"davinci/domain/administrative_usecases/resolution"
+	"davinci/settings"
+	"davinci/view"
+	"davinci/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -13,11 +14,13 @@ import (
 
 type newHTTPResolutionModule struct {
 	useCases resolution.UseCases
+	settings settings.Settings
 }
 
-func NewHTTPResolutionModule(cases resolution.UseCases) view.HttpModule {
+func NewHTTPResolutionModule(settings settings.Settings, cases resolution.UseCases) view.HttpModule {
 	return &newHTTPResolutionModule{
 		useCases: cases,
+		settings: settings,
 	}
 }
 

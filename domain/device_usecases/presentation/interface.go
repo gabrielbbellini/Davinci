@@ -1,8 +1,8 @@
 package presentation
 
 import (
-	"base/domain/entities"
 	"context"
+	"davinci/domain/entities"
 )
 
 type UseCases interface {

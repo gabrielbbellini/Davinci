@@ -1,17 +1,18 @@
 package infrastructure
 
 import (
-	authorization_usecases "base/domain/device_usecases/authorization"
-	device_usecases "base/domain/device_usecases/device"
-	presentation_usecases "base/domain/device_usecases/presentation"
-	authorization_repository "base/infrastructure/device_repository/authorization"
-	device_repository "base/infrastructure/device_repository/device"
-	presentation_repository "base/infrastructure/device_repository/presentation"
-	user_repository "base/infrastructure/device_repository/user"
-	"base/view/device_view"
-	"base/view/http_error"
 	"context"
 	"database/sql"
+	authorization_usecases "davinci/domain/device_usecases/authorization"
+	device_usecases "davinci/domain/device_usecases/device"
+	presentation_usecases "davinci/domain/device_usecases/presentation"
+	authorization_repository "davinci/infrastructure/device_repository/authorization"
+	device_repository "davinci/infrastructure/device_repository/device"
+	presentation_repository "davinci/infrastructure/device_repository/presentation"
+	user_repository "davinci/infrastructure/device_repository/user"
+	"davinci/settings"
+	"davinci/view/device_view"
+	"davinci/view/http_error"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"log"
@@ -19,7 +20,9 @@ import (
 	"strconv"
 )
 
-func SetupDeviceModules(router *mux.Router, db *sql.DB) error {
+func setupDeviceModules(settings settings.Settings, router *mux.Router, db *sql.DB) error {
+	// TODO: PASS THE SETTINGS AS PARAMETER TO EACH USE CASE, REPOSITORY AND HTTP MODULE
+
 	userRepository := user_repository.NewRepository(db)
 	deviceRepository := device_repository.NewRepository(db)
 	presentationRepository := presentation_repository.NewPresentationRepository(db)

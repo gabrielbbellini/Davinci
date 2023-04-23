@@ -1,9 +1,9 @@
 package device
 
 import (
-	"base/domain/entities"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
 	"log"
 )
 
@@ -24,11 +24,8 @@ func (r repository) GetByName(ctx context.Context, deviceName string, userId int
 	       d.name,
 	       d.id_orientation,
 	       d.status_code, 
-	       d.id_resolution,
-	       r.width,
-	       r.height
+	       d.id_resolution
 	FROM device d
-		INNER JOIN resolution r on d.id_resolution = r.id
 	WHERE d.name = ? AND d.id_user = ?
 	`
 	var device entities.Device
@@ -43,9 +40,7 @@ func (r repository) GetByName(ctx context.Context, deviceName string, userId int
 		&device.Name,
 		&device.Orientation,
 		&device.StatusCode,
-		&device.Resolution.Id,
-		&device.Resolution.Width,
-		&device.Resolution.Height,
+		&device.ResolutionId,
 	)
 
 	if err != nil {

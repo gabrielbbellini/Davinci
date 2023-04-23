@@ -1,7 +1,7 @@
 package resolution
 
 import (
-	"base/domain/entities"
+	"davinci/domain/entities"
 	"context"
 )
 

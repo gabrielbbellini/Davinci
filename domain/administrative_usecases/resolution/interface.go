@@ -1,8 +1,8 @@
 package resolution
 
 import (
-	"base/domain/entities"
 	"context"
+	"davinci/domain/entities"
 )
 
 type UseCases interface {

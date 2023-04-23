@@ -1,18 +1,21 @@
 package presentation
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/administrative_repository/presentation"
 	"context"
+	"davinci/domain/entities"
+	"davinci/infrastructure/administrative_repository/presentation"
+	"davinci/settings"
 )
 
 type useCases struct {
 	presentationRepo presentation.Repository
+	settings         settings.Settings
 }
 
-func NewUseCases(presentationRepo presentation.Repository) UseCases {
+func NewUseCases(settings settings.Settings, presentationRepo presentation.Repository) UseCases {
 	return &useCases{
 		presentationRepo: presentationRepo,
+		settings:         settings,
 	}
 }
 

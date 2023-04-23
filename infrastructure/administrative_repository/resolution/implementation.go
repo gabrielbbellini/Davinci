@@ -1,14 +1,23 @@
 package resolution
 
 import (
-	"base/domain/entities"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
+	"davinci/settings"
 	"log"
 )
 
 type repository struct {
-	db *sql.DB
+	db       *sql.DB
+	settings settings.Settings
+}
+
+func NewResolutionRepository(settings settings.Settings, db *sql.DB) Repository {
+	return &repository{
+		db:       db,
+		settings: settings,
+	}
 }
 
 func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
@@ -51,10 +60,4 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
 func (r repository) GetById(ctx context.Context, id int64) (entities.Resolution, error) {
 	var res entities.Resolution
 	return res, nil
-}
-
-func NewResolutionRepository(db *sql.DB) Repository {
-	return &repository{
-		db: db,
-	}
 }

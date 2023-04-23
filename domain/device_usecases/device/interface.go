@@ -1,14 +1,14 @@
 package device
 
 import (
-	"base/domain/entities"
 	"context"
+	"davinci/domain/entities"
 )
 
 type UseCases interface {
 	// Create new device.
 	Create(ctx context.Context, device entities.Device, userId int64) error
-	
+
 	// Update update a device.
 	Update(ctx context.Context, device entities.Device, userId int64) error
 

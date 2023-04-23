@@ -1,9 +1,9 @@
 package device
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/device_repository/device"
 	"context"
+	"davinci/domain/entities"
+	"davinci/infrastructure/device_repository/device"
 )
 
 type useCases struct {

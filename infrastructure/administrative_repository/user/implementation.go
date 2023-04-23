@@ -1,9 +1,9 @@
 package user
 
 import (
-	"base/domain/entities"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
 )
 
 type repository struct {

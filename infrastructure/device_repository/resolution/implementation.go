@@ -1,9 +1,9 @@
 package resolution
 
 import (
-	"base/domain/entities"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
 	"log"
 )
 

@@ -1,12 +1,13 @@
 package device
 
 import (
-	"base/domain/entities"
-	deviceRepository "base/infrastructure/administrative_repository/device"
-	"base/infrastructure/administrative_repository/resolution"
+	"davinci/domain/entities"
+	deviceRepository "davinci/infrastructure/administrative_repository/device"
+	"davinci/infrastructure/administrative_repository/resolution"
+	"davinci/settings"
 
-	"base/view/http_error"
 	"context"
+	"davinci/view/http_error"
 	"log"
 	"strings"
 )
@@ -14,12 +15,14 @@ import (
 type useCases struct {
 	deviceRepository     deviceRepository.Repository
 	resolutionRepository resolution.Repository
+	settings             settings.Settings
 }
 
-func NewUseCases(deviceRepository deviceRepository.Repository, repositoryRepository resolution.Repository) UseCases {
+func NewUseCases(settings settings.Settings, deviceRepository deviceRepository.Repository, repositoryRepository resolution.Repository) UseCases {
 	return &useCases{
 		deviceRepository:     deviceRepository,
 		resolutionRepository: repositoryRepository,
+		settings:             settings,
 	}
 }
 
@@ -36,24 +39,30 @@ func (u useCases) Create(ctx context.Context, device entities.Device, userId int
 
 	resolutions, err := u.resolutionRepository.GetAll(ctx)
 	if err != nil {
-		log.Println("[Create] error GetAll", err)
+		log.Println("[Create] Error GetAll", err)
 		return http_error.NewInternalServerError("Erro ao consultar as resoulões disponíveis.")
 	}
 
 	var isResolutionValid bool
 	for _, it := range resolutions {
-		if it.Id == device.Resolution.Id {
+		if it.Id == device.ResolutionId {
 			isResolutionValid = true
 			break
 		}
 	}
 
 	if !isResolutionValid {
-		log.Println("[Create] error !isResolutionValid", err)
-		return http_error.NewInternalServerError("Resolução não é válida.")
+		log.Println("[Create] Error !isResolutionValid", err)
+		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
-	return u.deviceRepository.Create(ctx, device, userId)
+	err = u.deviceRepository.Create(ctx, device, userId)
+	if err != nil {
+		log.Println("[Create] Error Create")
+		return http_error.NewInternalServerError(err.Error())
+	}
+
+	return nil
 }
 
 func (u useCases) Update(ctx context.Context, device entities.Device, userId int64) error {
@@ -75,7 +84,7 @@ func (u useCases) Update(ctx context.Context, device entities.Device, userId int
 
 	var isResolutionValid bool
 	for _, it := range resolutions {
-		if it == device.Resolution {
+		if it.Id == device.ResolutionId {
 			isResolutionValid = true
 			break
 		}

@@ -1,15 +1,15 @@
 package entities
 
-import "base/util"
+import "davinci/util"
 
 type Device struct {
-	Id          int64         `json:"id,omitempty"`
-	Name        string        `json:"name,omitempty"`
-	Resolution  Resolution    `json:"resolution,omitempty"`
-	Orientation Orientation   `json:"orientation,omitempty"`
-	StatusCode  int8          `json:"statusCode"`
-	ModifiedAt  util.DateTime `json:"modifiedAt,omitempty"`
-	CreatedAt   util.DateTime `json:"createdAt,omitempty"`
+	Id           int64         `json:"id,omitempty"`
+	Name         string        `json:"name,omitempty"`
+	ResolutionId int64         `json:"resolutionId,omitempty"`
+	Orientation  Orientation   `json:"orientation,omitempty"`
+	StatusCode   int8          `json:"statusCode"`
+	ModifiedAt   util.DateTime `json:"modifiedAt,omitempty"`
+	CreatedAt    util.DateTime `json:"createdAt,omitempty"`
 }
 
 type Resolution struct {

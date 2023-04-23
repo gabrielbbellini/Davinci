@@ -1,6 +1,6 @@
 package user
 
-import "base/domain/entities"
+import "davinci/domain/entities"
 
 type UseCases interface {
 	Create(user entities.User) error

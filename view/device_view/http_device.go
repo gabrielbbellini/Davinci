@@ -1,8 +1,8 @@
 package device_view
 
 import (
-	"base/domain/device_usecases/device"
-	"base/view"
+	"davinci/domain/device_usecases/device"
+	"davinci/view"
 	"github.com/gorilla/mux"
 	"net/http"
 )

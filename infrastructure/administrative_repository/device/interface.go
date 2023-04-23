@@ -1,8 +1,8 @@
 package device
 
 import (
-	"base/domain/entities"
 	"context"
+	"davinci/domain/entities"
 )
 
 type Repository interface {

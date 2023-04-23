@@ -1,22 +1,23 @@
 package authorization
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/administrative_repository/authorization"
-	"base/view/http_error"
 	"context"
+	"davinci/domain/entities"
+	"davinci/infrastructure/administrative_repository/authorization"
+	"davinci/settings"
+	"davinci/view/http_error"
 	"strings"
 )
 
 type useCases struct {
 	repository authorization.Repository
+	settings   settings.Settings
 }
 
-func NewUseCases(
-	repository authorization.Repository,
-) UseCases {
+func NewUseCases(settings settings.Settings, repository authorization.Repository) UseCases {
 	return &useCases{
 		repository: repository,
+		settings:   settings,
 	}
 }
 

@@ -1,0 +1,13 @@
+server:
+  host: "192.168.30.3"
+  port: "8000"
+
+database:
+  host: "localhost"
+  port: "3306"
+  user: "root"
+  password: "root"
+  name: "davinci"
+
+authentication:
+  JWTAccessKey: "D@v!nC19R0J3CT"

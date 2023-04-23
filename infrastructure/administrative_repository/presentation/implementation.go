@@ -1,15 +1,24 @@
 package presentation
 
 import (
-	"base/domain/entities"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
+	"davinci/settings"
 	"encoding/json"
 	"log"
 )
 
 type repository struct {
-	db *sql.DB
+	db       *sql.DB
+	settings settings.Settings
+}
+
+func NewPresentationRepository(settings settings.Settings, db *sql.DB) Repository {
+	return &repository{
+		db:       db,
+		settings: settings,
+	}
 }
 
 func (r repository) Create(ctx context.Context, presentation entities.Presentation, idUser int64) error {
@@ -340,10 +349,4 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 	presentation.Pages = pages
 
 	return &presentation, nil
-}
-
-func NewPresentationRepository(db *sql.DB) Repository {
-	return &repository{
-		db: db,
-	}
 }

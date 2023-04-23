@@ -1,22 +1,25 @@
 package authorization
 
 import (
-	"base/domain/entities"
-	"base/view/http_error"
 	"context"
 	"database/sql"
+	"davinci/domain/entities"
+	"davinci/settings"
+	"davinci/view/http_error"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 )
 
 type repository struct {
-	db *sql.DB
+	db       *sql.DB
+	settings settings.Settings
 }
 
-func NewRepository(db *sql.DB) Repository {
+func NewRepository(settings settings.Settings, db *sql.DB) Repository {
 	return &repository{
-		db: db,
+		db:       db,
+		settings: settings,
 	}
 }
 

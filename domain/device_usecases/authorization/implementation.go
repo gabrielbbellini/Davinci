@@ -1,12 +1,12 @@
 package authorization
 
 import (
-	"base/domain/entities"
-	"base/infrastructure/device_repository/authorization"
-	device_repository "base/infrastructure/device_repository/device"
-	user_repository "base/infrastructure/device_repository/user"
-	"base/view/http_error"
 	"context"
+	"davinci/domain/entities"
+	"davinci/infrastructure/device_repository/authorization"
+	device_repository "davinci/infrastructure/device_repository/device"
+	user_repository "davinci/infrastructure/device_repository/user"
+	"davinci/view/http_error"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"strings"

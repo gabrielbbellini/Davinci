@@ -1,10 +1,11 @@
 package administrative_view
 
 import (
-	"base/domain/administrative_usecases/presentation"
-	"base/domain/entities"
-	"base/view"
-	"base/view/http_error"
+	"davinci/domain/administrative_usecases/presentation"
+	"davinci/domain/entities"
+	"davinci/settings"
+	"davinci/view"
+	"davinci/view/http_error"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io"
@@ -15,11 +16,13 @@ import (
 
 type newHTTPPresentationModule struct {
 	useCases presentation.UseCases
+	settings settings.Settings
 }
 
-func NewHTTPPresentationModule(cases presentation.UseCases) view.HttpModule {
+func NewHTTPPresentationModule(settings settings.Settings, cases presentation.UseCases) view.HttpModule {
 	return &newHTTPPresentationModule{
 		useCases: cases,
+		settings: settings,
 	}
 }
 

@@ -1,6 +1,6 @@
 package entities
 
-import "base/util"
+import "davinci/util"
 
 const StatusOk = 0
 const StatusDeleted = 2

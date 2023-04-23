@@ -1,19 +1,20 @@
 package infrastructure
 
 import (
-	authorization_usecases "base/domain/administrative_usecases/authorization"
-	device_usecases "base/domain/administrative_usecases/device"
-	presentation_usecase "base/domain/administrative_usecases/presentation"
-	resolution_usecases "base/domain/administrative_usecases/resolution"
-	"base/domain/entities"
-	authorization_repository "base/infrastructure/administrative_repository/authorization"
-	device_repository "base/infrastructure/administrative_repository/device"
-	presentation_repository "base/infrastructure/administrative_repository/presentation"
-	"base/infrastructure/administrative_repository/resolution"
-	"base/view/administrative_view"
-	"base/view/http_error"
 	"context"
 	"database/sql"
+	authorization_usecases "davinci/domain/administrative_usecases/authorization"
+	device_usecases "davinci/domain/administrative_usecases/device"
+	presentation_usecase "davinci/domain/administrative_usecases/presentation"
+	resolution_usecases "davinci/domain/administrative_usecases/resolution"
+	"davinci/domain/entities"
+	authorization_repository "davinci/infrastructure/administrative_repository/authorization"
+	device_repository "davinci/infrastructure/administrative_repository/device"
+	presentation_repository "davinci/infrastructure/administrative_repository/presentation"
+	"davinci/infrastructure/administrative_repository/resolution"
+	"davinci/settings"
+	"davinci/view/administrative_view"
+	"davinci/view/http_error"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -21,27 +22,26 @@ import (
 	"net/http"
 )
 
-func SetupAdministrativeModules(router *mux.Router, db *sql.DB) error {
+func setupAdministrativeModules(settings settings.Settings, router *mux.Router, db *sql.DB) error {
+	authorizationRepository := authorization_repository.NewRepository(settings, db)
+	authorizationUseCases := authorization_usecases.NewUseCases(settings, authorizationRepository)
 
-	authorizationRepository := authorization_repository.NewRepository(db)
-	resolutionRepository := resolution.NewResolutionRepository(db)
-	resolutionUseCases := resolution_usecases.NewUseCases(resolutionRepository)
+	resolutionRepository := resolution.NewResolutionRepository(settings, db)
+	resolutionUseCases := resolution_usecases.NewUseCases(settings, resolutionRepository)
 
-	deviceRepository := device_repository.NewRepository(db)
+	deviceRepository := device_repository.NewRepository(settings, db)
+	deviceUseCases := device_usecases.NewUseCases(settings, deviceRepository, resolutionRepository)
 
-	authorizationUseCases := authorization_usecases.NewUseCases(authorizationRepository)
-	deviceUseCases := device_usecases.NewUseCases(deviceRepository, resolutionRepository)
-
-	presentationRepository := presentation_repository.NewPresentationRepository(db)
-	presentationUseCase := presentation_usecase.NewUseCases(presentationRepository)
+	presentationRepository := presentation_repository.NewPresentationRepository(settings, db)
+	presentationUseCase := presentation_usecase.NewUseCases(settings, presentationRepository)
 
 	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
 	administrativeRouter.Use(authorizationMiddleware)
 
-	administrative_view.NewHTTPAuthorization(authorizationUseCases).Setup(administrativeRouter)
-	administrative_view.NewHTTPDeviceModule(deviceUseCases).Setup(administrativeRouter)
-	administrative_view.NewHTTPResolutionModule(resolutionUseCases).Setup(administrativeRouter)
-	administrative_view.NewHTTPPresentationModule(presentationUseCase).Setup(administrativeRouter)
+	administrative_view.NewHTTPAuthorization(settings, authorizationUseCases).Setup(administrativeRouter)
+	administrative_view.NewHTTPDeviceModule(settings, deviceUseCases).Setup(administrativeRouter)
+	administrative_view.NewHTTPResolutionModule(settings, resolutionUseCases).Setup(administrativeRouter)
+	administrative_view.NewHTTPPresentationModule(settings, presentationUseCase).Setup(administrativeRouter)
 
 	return nil
 }
