@@ -15,7 +15,7 @@ func main() {
 	router := mux.NewRouter()
 	err := infrastructure.Setup(router)
 	if err != nil {
-		log.Println("[main] Error SetupDeviceModules", err)
+		log.Println("[main] Error Setup", err)
 		return
 	}
 
