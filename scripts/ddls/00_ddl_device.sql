@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS device
 (
     id                      INTEGER       NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_user                 INTEGER       NOT NULL REFERENCES user (id),
-    name                    VARCHAR(60)   NOT NULL DEFAULT '' UNIQUE,
+    name                    VARCHAR(60)   NOT NULL UNIQUE,
     id_resolution           INTEGER       NOT NULL REFERENCES resolution (id),
     id_orientation          INTEGER       NOT NULL DEFAULT 0,
     status_code             TINYINT       NOT NULL DEFAULT 0,
