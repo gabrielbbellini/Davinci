@@ -68,7 +68,16 @@ func (u useCases) Update(ctx context.Context, presentationId int64, presentation
 		return http_error.NewBadRequestError("Orientação informada não é válida.")
 	}
 
-	_, err := u.resolutionRepository.GetById(ctx, presentation.ResolutionId)
+	_, err := u.presentationRepo.GetById(ctx, presentationId, userId)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Update] Error GetById", err)
+		return http_error.NewInternalServerError("Erro ao editar apresentação.")
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return http_error.NewBadRequestError("Apresentação não encontrada.")
+	}
+
+	_, err = u.resolutionRepository.GetById(ctx, presentation.ResolutionId)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println("[Update] Error GetById", err)
 		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
