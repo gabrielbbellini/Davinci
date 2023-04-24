@@ -11,5 +11,5 @@ type UseCases interface {
 	GetAll(ctx context.Context) ([]entities.Resolution, error)
 
 	// GetById return a resolution by id.
-	GetById(ctx context.Context, id int64) (entities.Resolution, error)
+	GetById(ctx context.Context, resolutionId int64) (*entities.Resolution, error)
 }

@@ -38,22 +38,13 @@ func (u useCases) Create(ctx context.Context, presentation entities.Presentation
 		return 0, http_error.NewBadRequestError("Orientação informada não é válida.")
 	}
 
-	resolutions, err := u.resolutionRepository.GetAll(ctx)
-	if err != nil {
-		log.Println("[Create] Error GetAll", err)
+	_, err := u.resolutionRepository.GetById(ctx, presentation.ResolutionId)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Create] Error GetById", err)
 		return 0, http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
-
-	var isResolutionValid bool
-	for _, it := range resolutions {
-		if it.Id == presentation.ResolutionId {
-			isResolutionValid = true
-			break
-		}
-	}
-
-	if !isResolutionValid {
-		log.Println("[Create] Error !isResolutionValid", err)
+	if !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Create] Error resolution is not valid.", err)
 		return 0, http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
@@ -77,22 +68,13 @@ func (u useCases) Update(ctx context.Context, presentationId int64, presentation
 		return http_error.NewBadRequestError("Orientação informada não é válida.")
 	}
 
-	resolutions, err := u.resolutionRepository.GetAll(ctx)
-	if err != nil {
-		log.Println("[Update] Error GetAll", err)
+	_, err := u.resolutionRepository.GetById(ctx, presentation.ResolutionId)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Update] Error GetById", err)
 		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
-
-	var isResolutionValid bool
-	for _, it := range resolutions {
-		if it.Id == presentation.ResolutionId {
-			isResolutionValid = true
-			break
-		}
-	}
-
-	if !isResolutionValid {
-		log.Println("[Update] Error !isResolutionValid", err)
+	if !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Update] Error resolution is not valid.", err)
 		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 

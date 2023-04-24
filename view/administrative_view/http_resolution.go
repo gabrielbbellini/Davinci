@@ -41,13 +41,14 @@ func (n newHTTPResolutionModule) getAll(w http.ResponseWriter, r *http.Request) 
 	b, err := json.Marshal(resolutions)
 	if err != nil {
 		log.Println("[getAll] Error Marshal", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http_error.HandleError(w, err)
 		return
 	}
 
 	_, err = w.Write(b)
 	if err != nil {
 		log.Println("[getAll] Error Write", err)
+		http_error.HandleError(w, err)
 		return
 	}
 }
