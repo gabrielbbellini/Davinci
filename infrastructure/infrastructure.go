@@ -3,13 +3,13 @@ package infrastructure
 import (
 	"database/sql"
 	"davinci/settings"
-	"davinci/view/administrative_view"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -99,7 +99,7 @@ func getTokenFromRequest(r *http.Request) (*jwt.Token, error) {
 			log.Println("[getTokenFromRequest] token.Method.(*jwt.SigningMethodHMAC) !ok")
 			return nil, errors.New("error parsing token")
 		}
-		return []byte(administrative_view.SecretJWTKey), nil
+		return []byte(os.Getenv("DAVINCI_SECRET_KEY")), nil
 	})
 	if err != nil {
 		log.Println("[getTokenFromRequest] Error parsing token", err)

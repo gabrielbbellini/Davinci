@@ -21,7 +21,8 @@ func (u useCase) Create(user entities.User) error {
 }
 
 func (u useCase) Get(id int64) (*entities.User, error) {
-	return u.repository.Get(id)
+	//TODO implement me
+	panic("implement me")
 }
 
 func (u useCase) GetAll() ([]entities.User, error) {

@@ -11,10 +11,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
-
-const SecretJWTKey = "secret"
 
 type newHTTPAuthorizationModule struct {
 	useCases authorization.UseCases
@@ -57,7 +56,7 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		"deviceId": strconv.FormatInt(device.Id, 10),
 	})
 
-	tokenString, err := token.SignedString([]byte(SecretJWTKey))
+	tokenString, err := token.SignedString([]byte(os.Getenv("DAVINCI_SECRET_KEY")))
 	if err != nil {
 		log.Println("[login] Error SignedString", err)
 		http_error.HandleError(w, err)
