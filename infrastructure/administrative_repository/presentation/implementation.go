@@ -99,7 +99,7 @@ func (r repository) createPage(ctx context.Context, tx *sql.Tx, page entities.Pa
 	componentString := string(b)
 
 	if tx != nil {
-		result, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration)
+		result, err = tx.ExecContext(ctx, command, presentationId, componentString, page.Duration)
 	} else {
 		result, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration)
 	}
@@ -189,7 +189,7 @@ func (r repository) updatePage(ctx context.Context, tx *sql.Tx, presentationId i
 	componentString := string(b)
 
 	if tx != nil {
-		_, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
+		_, err = tx.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
 	} else {
 		_, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
 	}
