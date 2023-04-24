@@ -23,7 +23,7 @@ func NewPresentationRepository(settings settings.Settings, db *sql.DB) Repositor
 
 func (r repository) Create(ctx context.Context, presentation entities.Presentation, idUser int64) error {
 	queryPresentation := `
-	INSERT INTO presentation (name,id_user, id_resolution)
+	INSERT INTO presentation (name, id_user, id_resolution)
 	VALUES (?,?,?)
 	`
 

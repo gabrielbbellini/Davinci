@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS presentation
 (
     id            INTEGER     NOT NULL PRIMARY KEY AUTO_INCREMENT,
     id_resolution INTEGER     NOT NULL REFERENCES resolution (id),
+    id_user       INTEGER     NOT NULL REFERENCES user (id),
     name          VARCHAR(30) NOT NULL,
     status_code   TINYINT     NOT NULL DEFAULT 0,
     created_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -10,7 +11,12 @@ CREATE TABLE IF NOT EXISTS presentation
 
 ALTER TABLE presentation
     ADD CONSTRAINT presentation_resolution_fk
-        FOREIGN KEY (id_resolution) REFERENCES user (id);
+        FOREIGN KEY (id_resolution) REFERENCES resolution (id);
+
+
+ALTER TABLE presentation
+    ADD CONSTRAINT presentation_user_fk
+        FOREIGN KEY (id_user) REFERENCES user (id);
 
 CREATE TABLE IF NOT EXISTS page
 (
@@ -25,7 +31,7 @@ CREATE TABLE IF NOT EXISTS page
 
 ALTER TABLE page
     ADD CONSTRAINT page_presentation_fk
-        FOREIGN KEY (id_presentation) REFERENCES user (id);
+        FOREIGN KEY (id_presentation) REFERENCES presentation (id);
 
 CREATE TABLE IF NOT EXISTS device_presentation
 (
@@ -44,4 +50,4 @@ ALTER TABLE device_presentation
 
 ALTER TABLE device_presentation
     ADD CONSTRAINT device_presentation_device
-        FOREIGN KEY (id_presentation) REFERENCES presentation (id);
+        FOREIGN KEY (id_device) REFERENCES device (id);
