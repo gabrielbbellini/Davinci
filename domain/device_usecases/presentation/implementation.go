@@ -2,8 +2,12 @@ package presentation
 
 import (
 	"context"
+	"database/sql"
 	"davinci/domain/entities"
 	"davinci/infrastructure/device_repository/presentation"
+	"davinci/view/http_error"
+	"errors"
+	"log"
 )
 
 type useCases struct {
@@ -16,21 +20,15 @@ func NewUseCases(presentationRepo presentation.Repository) UseCases {
 	}
 }
 
-func (u useCases) GetAll(ctx context.Context, userId int64, idResolution int64) ([]entities.Presentation, error) {
-	return u.presentationRepo.GetAll(ctx, userId, idResolution)
-}
+func (u useCases) GetCurrentPresentation(ctx context.Context, deviceId int64) (*entities.Presentation, error) {
+	currentPresentation, err := u.presentationRepo.GetCurrentPresentation(ctx, deviceId)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		log.Println("[GetCurrentPresentation] Error GetCurrentPresentation", err)
+		return nil, http_error.NewInternalServerError("Erro ao consultar apresentação atual.")
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http_error.NewBadRequestError("Não há nenhuma apresentação tocando no momento.")
+	}
 
-func (u useCases) GetById(
-	ctx context.Context,
-	id int64,
-	userId int64,
-) (
-	*entities.Presentation,
-	error,
-) {
-	return u.presentationRepo.GetById(
-		ctx,
-		id,
-		userId,
-	)
+	return currentPresentation, nil
 }

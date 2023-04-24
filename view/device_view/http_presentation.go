@@ -2,7 +2,6 @@ package device_view
 
 import (
 	"davinci/domain/device_usecases/presentation"
-	"davinci/domain/entities"
 	"davinci/view"
 	"davinci/view/http_error"
 	"encoding/json"
@@ -22,55 +21,31 @@ func NewHTTPPresentationModule(cases presentation.UseCases) view.HttpModule {
 }
 
 func (n newHTTPPresentationModule) Setup(router *mux.Router) {
-	router.HandleFunc("/presentations", n.getById).Methods(http.MethodGet)
+	router.HandleFunc("/presentation", n.getCurrentPresentation).Methods(http.MethodGet)
 }
 
-func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request) {
+func (n newHTTPPresentationModule) getCurrentPresentation(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
-	resolution := ctx.Value("resolution").(entities.Resolution)
-	presentations, err := n.useCases.GetAll(ctx, user.Id, resolution.Id)
+	deviceId := ctx.Value("deviceId").(int64)
+
+	presentations, err := n.useCases.GetCurrentPresentation(ctx, deviceId)
 	if err != nil {
-		log.Println("[getAll] Error", err)
+		log.Println("[getCurrentPresentation] Error", err)
 		http_error.HandleError(w, err)
 		return
 	}
 
 	b, err := json.Marshal(presentations)
 	if err != nil {
-		log.Println("[getAll] Error Marshal", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = w.Write(b)
-	if err != nil {
-		log.Println("[getAll] Error Write", err)
-		return
-	}
-}
-
-func (n newHTTPPresentationModule) getById(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
-	device := ctx.Value("device").(entities.Device)
-	presentations, err := n.useCases.GetById(ctx, device.Id, user.Id)
-	if err != nil {
-		log.Println("[getById] Error", err)
+		log.Println("[getCurrentPresentation] Error Marshal", err)
 		http_error.HandleError(w, err)
 		return
 	}
 
-	b, err := json.Marshal(presentations)
-	if err != nil {
-		log.Println("[getById] Error Marshal", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	_, err = w.Write(b)
 	if err != nil {
-		log.Println("[getById] Error Write", err)
+		http_error.HandleError(w, err)
+		log.Println("[getCurrentPresentation] Error Write", err)
 		return
 	}
 }
