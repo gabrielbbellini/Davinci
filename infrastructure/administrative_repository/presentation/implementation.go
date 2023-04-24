@@ -21,211 +21,252 @@ func NewPresentationRepository(settings settings.Settings, db *sql.DB) Repositor
 	}
 }
 
-func (r repository) Create(ctx context.Context, presentation entities.Presentation, idUser int64) error {
-	queryPresentation := `
+func (r repository) Create(ctx context.Context, presentation entities.Presentation, userId int64) (int64, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("[Create] Error BeginTx", err)
+		return 0, err
+	}
+
+	presentationId, err := r.createPresentation(ctx, tx, presentation, userId)
+	if err != nil {
+		_ = tx.Rollback()
+		log.Println("[Create] Error createPresentation", err)
+		return 0, err
+	}
+
+	for _, page := range presentation.Pages {
+		_, err = r.createPage(ctx, tx, page, presentationId)
+		if err != nil {
+			_ = tx.Rollback()
+			log.Println("[Create] Error createPage", err)
+			return 0, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println("[Create] Error Commit", err)
+		return 0, err
+	}
+
+	return presentationId, nil
+}
+
+func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presentation entities.Presentation, userId int64) (int64, error) {
+	command := `
 	INSERT INTO presentation (name, id_user, id_resolution)
 	VALUES (?,?,?)
 	`
 
-	queryPages := `
-	INSERT INTO page (id_presentation, duration, component) 
-	VALUES (?,?,?)
-	`
+	var result sql.Result
+	var err error
 
-	tx, err := r.db.Begin()
+	if tx != nil {
+		result, err = tx.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId)
+	} else {
+		result, err = r.db.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId)
+	}
+
 	if err != nil {
-		log.Println("[Create] error in Begin", err)
-		return err
+		log.Println("[createPresentation] Error ExecContext", err)
+		return 0, err
 	}
 
-	stmt, err := tx.PrepareContext(ctx, queryPresentation)
+	presentationId, err := result.LastInsertId()
 	if err != nil {
-		log.Println("[Create] error in PrepareContext Presentation", err)
-		return err
-	}
-	defer stmt.Close()
-
-	stmtPages, err := tx.PrepareContext(ctx, queryPages)
-	if err != nil {
-		log.Println("[Create] error in PrepareContext Presentation", err)
-		return err
-	}
-	defer stmtPages.Close()
-
-	result, err := stmt.ExecContext(
-		ctx,
-		presentation.Name,
-		idUser,
-	)
-	if err != nil {
-		log.Println("[Create] error in ExecContext Presentation", err)
-		_ = tx.Rollback()
-		return err
+		log.Println("[createPresentation] Error LastInsertId", err)
+		return 0, err
 	}
 
-	idPresentation, err := result.LastInsertId()
-
-	for _, item := range presentation.Pages {
-
-		var b []byte
-
-		switch item.Metadata.(type) {
-		case []interface{}:
-			b, err = json.Marshal(item.Metadata)
-			if err != nil {
-				log.Printf("Unsupported struct on param metadata")
-				_ = tx.Rollback()
-				return err
-			}
-		default:
-			log.Printf("Unsupported struct on param metadata")
-			b = []byte("")
-		}
-		_, err = stmtPages.ExecContext(
-			ctx,
-			idPresentation,
-			item.Timing,
-			string(b),
-		)
-		if err != nil {
-			log.Println("[Create] error in ExecContext Presentation", err)
-			_ = tx.Rollback()
-			return err
-		}
-	}
-
-	_ = tx.Commit()
-	return nil
+	return presentationId, nil
 }
 
-func (r repository) Update(ctx context.Context, presentation entities.Presentation, idUser int64) error {
-	query := `
-	UPDATE presentation p
-	SET
-	    p.name = ?,
-	    p.id_resolution = ?,
-	    p.status_code = ?
-	WHERE p.id = ? AND p.id_user = ?
-	`
-
-	deletePages := `
-	DELETE FROM page p
-	WHERE id_presentation = ?;
-	`
-
-	queryPages := `
-	INSERT INTO page (id_presentation, duration, component) 
+func (r repository) createPage(ctx context.Context, tx *sql.Tx, page entities.Page, presentationId int64) (int64, error) {
+	command := `
+	INSERT INTO page (id_presentation, component, duration)
 	VALUES (?,?,?)
 	`
 
+	var result sql.Result
+	var err error
+
+	b, err := json.Marshal(page.Component)
+	if err != nil {
+		log.Println("[createPage] Error Marshal", err)
+		return 0, err
+	}
+	componentString := string(b)
+
+	if tx != nil {
+		result, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration)
+	} else {
+		result, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration)
+	}
+	if err != nil {
+		log.Println("[createPage] Error ExecContext", err)
+		return 0, err
+	}
+
+	pageId, err := result.LastInsertId()
+	if err != nil {
+		log.Println("[createPage] Error LastInsertId", err)
+		return 0, err
+	}
+
+	return pageId, nil
+}
+
+func (r repository) Update(ctx context.Context, presentationId int64, presentation entities.Presentation, userId int64) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		log.Println("[Update] error in Begin tx", err)
 		return err
 	}
 
-	stmt, err := tx.PrepareContext(ctx, query)
+	err = r.updatePresentation(ctx, tx, presentationId, presentation, userId)
 	if err != nil {
 		_ = tx.Rollback()
-		log.Println("[Update] error in PrepareContext Presentation", err)
-		return err
-	}
-	defer stmt.Close()
-
-	stmtPage, err := tx.PrepareContext(ctx, queryPages)
-	if err != nil {
-		_ = tx.Rollback()
-		log.Println("[Update] error in PrepareContext Pages", err)
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = tx.ExecContext(ctx, deletePages, presentation.Id)
-	if err != nil {
-		_ = tx.Rollback()
-		log.Println("[Update] error in Delete pages", err)
+		log.Println("[Update] Error updatePresentation", err)
 		return err
 	}
 
-	_, err = stmt.ExecContext(
-		ctx,
-		presentation.Name,
-		presentation.StatusCode,
-		presentation.Resolution.Id,
-		presentation.Id,
-		idUser,
-	)
-	if err != nil {
-		_ = tx.Rollback()
-		log.Println("[Update] error in ExecContext Presentation", err)
-		return err
-	}
-
-	for _, item := range presentation.Pages {
-		var b []byte
-
-		switch item.Metadata.(type) {
-		case []interface{}:
-			b, err = json.Marshal(item.Metadata)
-			if err != nil {
-				log.Printf("Unsupported struct on param metadata")
-				_ = tx.Rollback()
-				return err
-			}
-		default:
-			log.Printf("Unsupported struct on param metadata")
-			b = []byte("")
-		}
-
-		_, err = stmtPage.ExecContext(ctx, presentation.Id, item.Timing, string(b))
+	for _, page := range presentation.Pages {
+		err = r.updatePage(ctx, tx, presentationId, page)
 		if err != nil {
-			log.Printf("[Update] error in ExecContext Pages")
 			_ = tx.Rollback()
+			log.Println("[Update] Error updatePage", err)
 			return err
 		}
 	}
 
 	_ = tx.Commit()
+	if err != nil {
+		log.Println("[Update] Error Commit", err)
+		return err
+	}
+
 	return nil
 }
 
-func (r repository) Delete(ctx context.Context, presentation entities.Presentation, idUser int64) error {
-	queryPresentation := `
-	DELETE FROM presentation d
-	WHERE id = ? AND id_user = ?
-	`
+func (r repository) updatePresentation(ctx context.Context, tx *sql.Tx, presentationId int64, presentation entities.Presentation, userId int64) error {
+	command := `
+	UPDATE presentation 
+	SET name = ?, id_resolution = ?
+	WHERE id = ? AND id_user = ?`
 
-	queryPages := `
-	DELETE FROM page p
-	WHERE id_presentation = ?;
-	`
+	var err error
+	if tx != nil {
+		_, err = tx.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentationId, userId)
+	} else {
+		_, err = r.db.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentationId, userId)
+	}
 
+	if err != nil {
+		log.Println("[updatePresentation] Error ExecContext", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r repository) updatePage(ctx context.Context, tx *sql.Tx, presentationId int64, page entities.Page) error {
+	command := `
+	UPDATE page 
+	SET id_presentation = ? , component = ?, duration = ?
+	WHERE id = ?`
+
+	var err error
+
+	b, err := json.Marshal(page.Component)
+	if err != nil {
+		log.Println("[updatePage] Error Marshal", err)
+		return err
+	}
+	componentString := string(b)
+
+	if tx != nil {
+		_, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
+	} else {
+		_, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
+	}
+	if err != nil {
+		log.Println("[updatePage] Error ExecContext", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r repository) Delete(ctx context.Context, presentationId int64, userId int64) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		log.Println("[Delete] error in Begin", err)
+		log.Println("[Delete] Error Begin", err)
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, queryPresentation, presentation.Id, idUser)
+	err = r.deletePresentation(ctx, tx, presentationId, userId)
 	if err != nil {
-		log.Println("[Delete] error in ExecContext Presentation", err)
-		_ = tx.Rollback()
+		log.Println("[Delete] Error deletePresentation", err)
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, queryPages, presentation.Id)
+	err = r.deletePresentationPages(ctx, tx, presentationId)
 	if err != nil {
-		log.Println("[Delete] error in ExecContext Pages", err)
-		_ = tx.Rollback()
+		log.Println("[Delete] Error deletePresentationPages", err)
 		return err
 	}
 
-	_ = tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		log.Println("[Delete] Error Commit", err)
+		return err
+	}
 
 	return nil
 }
 
-func (r repository) GetAll(ctx context.Context, idUser int64) ([]entities.Presentation, error) {
+func (r repository) deletePresentation(ctx context.Context, tx *sql.Tx, presentationId int64, userId int64) error {
+	command := `
+	UPDATE presentation 
+	SET status_code = ?
+	WHERE id = ? AND id_user = ?`
+
+	var err error
+	if tx != nil {
+		_, err = tx.ExecContext(ctx, command, entities.StatusDeleted, presentationId, userId)
+	} else {
+		_, err = r.db.ExecContext(ctx, command, entities.StatusDeleted, presentationId, userId)
+	}
+	if err != nil {
+		log.Println("[deletePresentation] Error ExecContext", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r repository) deletePresentationPages(ctx context.Context, tx *sql.Tx, presentationId int64) error {
+	command := `
+	UPDATE page 
+	SET status_code = ?
+	WHERE id_presentation = ?`
+
+	var err error
+	if tx != nil {
+		_, err = r.db.ExecContext(ctx, command, presentationId)
+	} else {
+		_, err = r.db.ExecContext(ctx, command, presentationId)
+	}
+	if err != nil {
+		log.Println("[deletePresentationPages] Error ExecContext", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Presentation, error) {
 	query := `
 	SELECT p.id,
 	       p.name,
@@ -236,9 +277,9 @@ func (r repository) GetAll(ctx context.Context, idUser int64) ([]entities.Presen
 	WHERE id_user = ?
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, idUser)
+	rows, err := r.db.QueryContext(ctx, query, userId)
 	if err != nil {
-		log.Println("[GetAll] error on QueryContext", err)
+		log.Println("[GetAll] Error QueryContext", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -254,7 +295,7 @@ func (r repository) GetAll(ctx context.Context, idUser int64) ([]entities.Presen
 			&presentation.ModifiedAt,
 		)
 		if err != nil {
-			log.Println("[GetAll] error in Scan", err)
+			log.Println("[GetAll] Error Scan", err)
 			return nil, err
 		}
 
@@ -264,18 +305,15 @@ func (r repository) GetAll(ctx context.Context, idUser int64) ([]entities.Presen
 	return presentations, nil
 }
 
-func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entities.Presentation, error) {
+func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entities.Presentation, error) {
 	query := `
 	SELECT p.id,
 	       p.name,
 	       p.status_code, 
 	       p.created_at, 
 	       p.modified_at,
-	       p.id_resolution,
-	       r.width,
-	       r.height
+	       p.id_resolution
 	FROM presentation as p
-		INNER JOIN resolution r on p.id_resolution = r.id
 	WHERE p.id = ? AND p.id_user = ?
 	`
 
@@ -292,44 +330,39 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 	`
 
 	var presentation entities.Presentation
-	var resolution entities.Resolution
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
 		id,
-		idUser,
+		userId,
 	).Scan(
 		&presentation.Id,
 		&presentation.Name,
 		&presentation.StatusCode,
 		&presentation.CreatedAt,
 		&presentation.ModifiedAt,
-		&resolution.Id,
-		&resolution.Width,
-		&resolution.Height,
+		&presentation.ResolutionId,
 	)
 	if err != nil {
 		log.Println("[GetById] error in QueryRowContext", err)
 		return nil, err
 	}
 
-	result, err := r.db.QueryContext(ctx, queryPages, id)
+	rows, err := r.db.QueryContext(ctx, queryPages, id)
 	if err != nil {
 		log.Println("[GetById] error in QueryContext", err)
 		return nil, err
 	}
-	defer result.Close()
+	defer rows.Close()
 
 	var pages []entities.Page
-	for result.Next() {
-		var metadata string
+	for rows.Next() {
 		var page entities.Page
-
-		err = result.Scan(
+		err = rows.Scan(
 			&page.Id,
-			&page.IdPresentation,
-			&page.Timing,
-			&metadata,
+			&page.PresentationId,
+			&page.Duration,
+			&page.Component,
 			&page.StatusCode,
 			&page.CreatedAt,
 			&page.ModifiedAt,
@@ -339,13 +372,89 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 			return nil, err
 		}
 
-		page.Metadata = metadata
+		pages = append(pages, page)
+	}
+	presentation.Pages = pages
+
+	return &presentation, nil
+}
+
+func (r repository) getPresentation(ctx context.Context, presentationId int64) (*entities.Presentation, error) {
+	//language=sql
+	query := `
+	SELECT id, 
+	       id_resolution, 
+	       name, 
+	       status_code, 
+	       created_at, 
+	       modified_at
+	FROM presentation
+	WHERE id = ?`
+
+	var presentation entities.Presentation
+	err := r.db.QueryRowContext(ctx, query, presentationId).Scan(
+		&presentation.Id,
+		&presentation.ResolutionId,
+		&presentation.Name,
+		&presentation.StatusCode,
+		&presentation.CreatedAt,
+		&presentation.ModifiedAt,
+	)
+	if err != nil {
+		log.Println("[getPresentation] Error Scan", err)
+		return nil, err
+	}
+
+	return &presentation, nil
+}
+
+func (r repository) getPresentationPages(ctx context.Context, presentationId int64) ([]entities.Page, error) {
+	//language=sql
+	query := `
+	SELECT id, 
+	       id_presentation, 
+	       duration, 
+	       component, 
+	       status_code, 
+	       created_at, 
+	       modified_at
+	FROM page
+	WHERE id_presentation = ?
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, presentationId)
+	if err != nil {
+		log.Println("[getPresentationPages] Error QueryContext", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var pages []entities.Page
+	for rows.Next() {
+		var page entities.Page
+		var componentString string
+		err = rows.Scan(
+			&page.Id,
+			&page.PresentationId,
+			&page.Duration,
+			&componentString,
+			&page.StatusCode,
+			&page.CreatedAt,
+			&page.ModifiedAt,
+		)
+		if err != nil {
+			log.Println("[getPresentationPages] Error Scan", err)
+			return nil, err
+		}
+
+		err = json.Unmarshal([]byte(componentString), &page.Component)
+		if err != nil {
+			log.Println("[getPresentationPages] Error Unmarshal", err)
+			return nil, err
+		}
 
 		pages = append(pages, page)
 	}
 
-	presentation.Resolution = resolution
-	presentation.Pages = pages
-
-	return &presentation, nil
+	return pages, err
 }

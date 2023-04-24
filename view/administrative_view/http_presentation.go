@@ -1,7 +1,7 @@
 package administrative_view
 
 import (
-	"davinci/domain/administrative_usecases/presentation"
+	presentation_mod "davinci/domain/administrative_usecases/presentation"
 	"davinci/domain/entities"
 	"davinci/settings"
 	"davinci/view"
@@ -15,11 +15,11 @@ import (
 )
 
 type newHTTPPresentationModule struct {
-	useCases presentation.UseCases
+	useCases presentation_mod.UseCases
 	settings settings.Settings
 }
 
-func NewHTTPPresentationModule(settings settings.Settings, cases presentation.UseCases) view.HttpModule {
+func NewHTTPPresentationModule(settings settings.Settings, cases presentation_mod.UseCases) view.HttpModule {
 	return &newHTTPPresentationModule{
 		useCases: cases,
 		settings: settings,
@@ -37,21 +37,32 @@ func (n newHTTPPresentationModule) Setup(router *mux.Router) {
 func (n newHTTPPresentationModule) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	request := r.Body
-	read, err := io.ReadAll(request)
+
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Println("[create] Error ReadAll", err)
+		http_error.HandleError(w, err)
 		return
 	}
 
-	var presentationRequest entities.Presentation
-	err = json.Unmarshal(read, &presentationRequest)
+	var presentation entities.Presentation
+	err = json.Unmarshal(b, &presentation)
 	if err != nil {
+		log.Println("[Create] Error Unmarshal", err)
+		http_error.HandleError(w, http_error.NewBadRequestError("Apresentação inválida."))
 		return
 	}
 
-	err = n.useCases.Create(ctx, presentationRequest, user.Id)
+	err = n.useCases.Create(ctx, presentation, user.Id)
 	if err != nil {
-		log.Println("[Create] Error", err)
+		log.Println("[Create] Error Create", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	_, err = w.Write([]byte("success"))
+	if err != nil {
+		log.Println("[Create] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -66,17 +77,24 @@ func (n newHTTPPresentationModule) update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var presentationRequest entities.Presentation
-	err = json.Unmarshal(read, &presentationRequest)
+	var presentation entities.Presentation
+	err = json.Unmarshal(read, &presentation)
 	if err != nil {
 		return
 	}
 
-	presentationRequest.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	presentation.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 
-	err = n.useCases.Update(ctx, presentationRequest, user.Id)
+	err = n.useCases.Update(ctx, presentation, user.Id)
 	if err != nil {
 		log.Println("[Update] Error", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	_, err = w.Write([]byte("success"))
+	if err != nil {
+		log.Println("[Create] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -86,18 +104,25 @@ func (n newHTTPPresentationModule) delete(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
 
-	var presentationRequest entities.Presentation
+	var presentation entities.Presentation
 
 	id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
 		log.Println("[Update] Error converting id", err)
 		return
 	}
-	presentationRequest.Id = id
+	presentation.Id = id
 
-	err = n.useCases.Delete(ctx, presentationRequest, user.Id)
+	err = n.useCases.Delete(ctx, presentation, user.Id)
 	if err != nil {
 		log.Println("[Update] Error", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	_, err = w.Write([]byte("success"))
+	if err != nil {
+		log.Println("[Create] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -140,7 +165,7 @@ func (n newHTTPPresentationModule) getById(w http.ResponseWriter, r *http.Reques
 	user := ctx.Value("user").(entities.User)
 	presentations, err := n.useCases.GetById(ctx, presentationId, user.Id)
 	if err != nil {
-		log.Println("[getById] Error", err)
+		log.Println("[getById] Error GetById", err)
 		http_error.HandleError(w, err)
 		return
 	}

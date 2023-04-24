@@ -1,9 +1,9 @@
 package presentation
 
 import (
+	"context"
 	"davinci/domain/entities"
 	"davinci/infrastructure/device_repository/presentation"
-	"context"
 )
 
 type useCases struct {
@@ -16,14 +16,14 @@ func NewUseCases(presentationRepo presentation.Repository) UseCases {
 	}
 }
 
-func (u useCases) GetAll(ctx context.Context, idUser int64, idResolution int64) ([]entities.Presentation, error) {
-	return u.presentationRepo.GetAll(ctx, idUser, idResolution)
+func (u useCases) GetAll(ctx context.Context, userId int64, idResolution int64) ([]entities.Presentation, error) {
+	return u.presentationRepo.GetAll(ctx, userId, idResolution)
 }
 
 func (u useCases) GetById(
 	ctx context.Context,
 	id int64,
-	idUser int64,
+	userId int64,
 ) (
 	*entities.Presentation,
 	error,
@@ -31,6 +31,6 @@ func (u useCases) GetById(
 	return u.presentationRepo.GetById(
 		ctx,
 		id,
-		idUser,
+		userId,
 	)
 }

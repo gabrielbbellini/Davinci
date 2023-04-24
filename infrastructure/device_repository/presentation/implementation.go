@@ -11,7 +11,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r repository) GetAll(ctx context.Context, idUser int64, idResolution int64) ([]entities.Presentation, error) {
+func (r repository) GetAll(ctx context.Context, userId int64, idResolution int64) ([]entities.Presentation, error) {
 	query := `
 	SELECT p.id,
 	       p.name,
@@ -22,7 +22,7 @@ func (r repository) GetAll(ctx context.Context, idUser int64, idResolution int64
 	WHERE id_user = ? AND id_resolution = ?
 	`
 
-	result, err := r.db.QueryContext(ctx, query, idUser, idResolution)
+	result, err := r.db.QueryContext(ctx, query, userId, idResolution)
 	if err != nil {
 		log.Println("[GetAll] error on QueryContext", err)
 		return nil, err
@@ -51,7 +51,7 @@ func (r repository) GetAll(ctx context.Context, idUser int64, idResolution int64
 	return presentations, nil
 }
 
-func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entities.Presentation, error) {
+func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entities.Presentation, error) {
 	query := `
 	SELECT p.id,
 	       p.name,
@@ -69,8 +69,8 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 	queryPages := `
 	SELECT p.id, 
 	       p.id_presentation, 
-	       p.timing, 
-	       p.metadata, 
+	       p.duration, 
+	       p.component, 
 	       p.status_code, 
 	       p.created_at, 
 	       p.modified_at
@@ -84,7 +84,7 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 		ctx,
 		query,
 		id,
-		idUser,
+		userId,
 	).Scan(
 		&presentation.Id,
 		&presentation.Name,
@@ -109,14 +109,13 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 
 	var pages []entities.Page
 	for result.Next() {
-		var metadata string
 		var page entities.Page
 
 		err = result.Scan(
 			&page.Id,
-			&page.IdPresentation,
-			&page.Timing,
-			&metadata,
+			&page.PresentationId,
+			&page.Duration,
+			&page.Component,
 			&page.StatusCode,
 			&page.CreatedAt,
 			&page.ModifiedAt,
@@ -126,12 +125,8 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 			return nil, err
 		}
 
-		page.Metadata = metadata
-
 		pages = append(pages, page)
 	}
-
-	presentation.Resolution = resolution
 	presentation.Pages = pages
 
 	return &presentation, nil

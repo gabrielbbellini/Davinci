@@ -42,7 +42,7 @@ func (u useCases) Create(ctx context.Context, device entities.Device, userId int
 	resolutions, err := u.resolutionRepository.GetAll(ctx)
 	if err != nil {
 		log.Println("[Create] Error GetAll", err)
-		return http_error.NewInternalServerError("Erro ao consultar as resoulões disponíveis.")
+		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
 
 	var isResolutionValid bool
@@ -90,7 +90,7 @@ func (u useCases) Update(ctx context.Context, deviceId int64, device entities.De
 	resolutions, err := u.resolutionRepository.GetAll(ctx)
 	if err != nil {
 		log.Println("[Update] error GetAll", err)
-		return http_error.NewInternalServerError("Erro ao consultar as resoulões disponíveis.")
+		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
 
 	var isResolutionValid bool

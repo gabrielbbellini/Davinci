@@ -33,7 +33,7 @@ func setupAdministrativeModules(settings settings.Settings, router *mux.Router, 
 	deviceUseCases := device_usecases.NewUseCases(settings, deviceRepository, resolutionRepository)
 
 	presentationRepository := presentation_repository.NewPresentationRepository(settings, db)
-	presentationUseCase := presentation_usecase.NewUseCases(settings, presentationRepository)
+	presentationUseCase := presentation_usecase.NewUseCases(settings, resolutionRepository, presentationRepository)
 
 	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
 	administrativeRouter.Use(authorizationMiddleware)
