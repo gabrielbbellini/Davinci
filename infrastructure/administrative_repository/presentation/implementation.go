@@ -28,7 +28,7 @@ func (r repository) Create(ctx context.Context, presentation entities.Presentati
 	`
 
 	queryPages := `
-	INSERT INTO page (id_presentation, timing, metadata) 
+	INSERT INTO page (id_presentation, duration, component) 
 	VALUES (?,?,?)
 	`
 
@@ -114,7 +114,7 @@ func (r repository) Update(ctx context.Context, presentation entities.Presentati
 	`
 
 	queryPages := `
-	INSERT INTO page (id_presentation, timing, metadata) 
+	INSERT INTO page (id_presentation, duration, component) 
 	VALUES (?,?,?)
 	`
 
@@ -236,18 +236,17 @@ func (r repository) GetAll(ctx context.Context, idUser int64) ([]entities.Presen
 	WHERE id_user = ?
 	`
 
-	result, err := r.db.QueryContext(ctx, query, idUser)
+	rows, err := r.db.QueryContext(ctx, query, idUser)
 	if err != nil {
 		log.Println("[GetAll] error on QueryContext", err)
 		return nil, err
 	}
-	defer result.Close()
+	defer rows.Close()
 
-	presentations := make([]entities.Presentation, 0)
-	for result.Next() {
+	var presentations []entities.Presentation
+	for rows.Next() {
 		var presentation entities.Presentation
-
-		err = result.Scan(
+		err = rows.Scan(
 			&presentation.Id,
 			&presentation.Name,
 			&presentation.StatusCode,
@@ -283,8 +282,8 @@ func (r repository) GetById(ctx context.Context, id int64, idUser int64) (*entit
 	queryPages := `
 	SELECT p.id, 
 	       p.id_presentation, 
-	       p.timing, 
-	       p.metadata, 
+	       p.duration, 
+	       p.component, 
 	       p.status_code, 
 	       p.created_at, 
 	       p.modified_at

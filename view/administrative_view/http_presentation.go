@@ -108,7 +108,7 @@ func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request
 	user := ctx.Value("user").(entities.User)
 	presentations, err := n.useCases.GetAll(ctx, user.Id)
 	if err != nil {
-		log.Println("[getAll] Error", err)
+		log.Println("[getAll] Error GetAll", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -116,19 +116,25 @@ func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request
 	b, err := json.Marshal(presentations)
 	if err != nil {
 		log.Println("[getAll] Error Marshal", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http_error.HandleError(w, err)
 		return
 	}
 
 	_, err = w.Write(b)
 	if err != nil {
 		log.Println("[getAll] Error Write", err)
+		http_error.HandleError(w, err)
 		return
 	}
 }
 
 func (n newHTTPPresentationModule) getById(w http.ResponseWriter, r *http.Request) {
 	presentationId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		log.Println("[getById] Error ParseInt", err)
+		http_error.HandleError(w, err)
+		return
+	}
 
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
@@ -142,13 +148,14 @@ func (n newHTTPPresentationModule) getById(w http.ResponseWriter, r *http.Reques
 	b, err := json.Marshal(presentations)
 	if err != nil {
 		log.Println("[getById] Error Marshal", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http_error.HandleError(w, err)
 		return
 	}
 
 	_, err = w.Write(b)
 	if err != nil {
 		log.Println("[getById] Error Write", err)
+		http_error.HandleError(w, err)
 		return
 	}
 }

@@ -2,9 +2,13 @@ package presentation
 
 import (
 	"context"
+	"database/sql"
 	"davinci/domain/entities"
 	"davinci/infrastructure/administrative_repository/presentation"
 	"davinci/settings"
+	"davinci/view/http_error"
+	"errors"
+	"log"
 )
 
 type useCases struct {
@@ -32,7 +36,13 @@ func (u useCases) Delete(ctx context.Context, presentation entities.Presentation
 }
 
 func (u useCases) GetAll(ctx context.Context, idUser int64) ([]entities.Presentation, error) {
-	return u.presentationRepo.GetAll(ctx, idUser)
+	devices, err := u.presentationRepo.GetAll(ctx, idUser)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[GetAll] Error GetAll", err)
+		return nil, http_error.NewInternalServerError("Erro ao consultar os dispositivos.")
+	}
+
+	return devices, nil
 }
 
 func (u useCases) GetById(

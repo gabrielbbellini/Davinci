@@ -1,15 +1,17 @@
 package presentation
 
 import (
-	"davinci/domain/entities"
 	"context"
+	"davinci/domain/entities"
 )
 
 type UseCases interface {
 	// Create new device.
 	Create(ctx context.Context, presentation entities.Presentation, idUser int64) error
+
 	// Update update a device.
 	Update(ctx context.Context, presentation entities.Presentation, idUser int64) error
+
 	// Delete remove a device.
 	Delete(ctx context.Context, presentation entities.Presentation, idUser int64) error
 
