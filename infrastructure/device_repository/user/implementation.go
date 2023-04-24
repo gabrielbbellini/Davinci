@@ -22,7 +22,7 @@ func (r repository) GetByEmail(ctx context.Context, email string) (*entities.Use
 	       name, 
 	       email, 
 	       password, 
-	       roleId, 
+	       id_role, 
 	       status_code
 	FROM user
 	WHERE email = ?

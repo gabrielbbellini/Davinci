@@ -31,8 +31,6 @@ func (n newHTTPAuthorizationModule) Setup(router *mux.Router) {
 }
 
 func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Println("[login] Error ReadAll", err)
@@ -43,11 +41,11 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 	var credentials entities.Credential
 	if err = json.Unmarshal(b, &credentials); err != nil {
 		log.Println("[login] Error Unmarshal", err)
-		http_error.HandleError(w, err)
+		http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 		return
 	}
 
-	device, err := n.useCases.Login(ctx, credentials)
+	device, err := n.useCases.Login(r.Context(), credentials)
 	if err != nil {
 		log.Println("[login] Error Login", err)
 		http_error.HandleError(w, err)
