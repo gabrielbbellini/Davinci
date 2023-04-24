@@ -254,9 +254,9 @@ func (r repository) deletePresentationPages(ctx context.Context, tx *sql.Tx, pre
 
 	var err error
 	if tx != nil {
-		_, err = r.db.ExecContext(ctx, command, presentationId)
+		_, err = r.db.ExecContext(ctx, command, entities.StatusDeleted, presentationId)
 	} else {
-		_, err = r.db.ExecContext(ctx, command, presentationId)
+		_, err = r.db.ExecContext(ctx, command, entities.StatusDeleted, presentationId)
 	}
 	if err != nil {
 		log.Println("[deletePresentationPages] Error ExecContext", err)
@@ -274,10 +274,10 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Presen
 	       p.created_at, 
 	       p.modified_at
 	FROM presentation as p
-	WHERE id_user = ?
+	WHERE id_user = ? AND status_code = ?
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, userId)
+	rows, err := r.db.QueryContext(ctx, query, userId, entities.StatusOk)
 	if err != nil {
 		log.Println("[GetAll] Error QueryContext", err)
 		return nil, err
@@ -305,81 +305,23 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Presen
 	return presentations, nil
 }
 
-func (r repository) GetById(ctx context.Context, id int64, userId int64) (*entities.Presentation, error) {
-	query := `
-	SELECT p.id,
-	       p.name,
-	       p.status_code, 
-	       p.created_at, 
-	       p.modified_at,
-	       p.id_resolution
-	FROM presentation as p
-	WHERE p.id = ? AND p.id_user = ?
-	`
-
-	queryPages := `
-	SELECT p.id, 
-	       p.id_presentation, 
-	       p.duration, 
-	       p.component, 
-	       p.status_code, 
-	       p.created_at, 
-	       p.modified_at
-	FROM page p
-	WHERE id_presentation = ?
-	`
-
-	var presentation entities.Presentation
-	err := r.db.QueryRowContext(
-		ctx,
-		query,
-		id,
-		userId,
-	).Scan(
-		&presentation.Id,
-		&presentation.Name,
-		&presentation.StatusCode,
-		&presentation.CreatedAt,
-		&presentation.ModifiedAt,
-		&presentation.ResolutionId,
-	)
+func (r repository) GetById(ctx context.Context, presentationId int64, userId int64) (*entities.Presentation, error) {
+	presentation, err := r.getPresentation(ctx, presentationId, userId)
 	if err != nil {
-		log.Println("[GetById] error in QueryRowContext", err)
+		log.Println("[GetById] Error getPresentation", err)
 		return nil, err
 	}
 
-	rows, err := r.db.QueryContext(ctx, queryPages, id)
+	presentation.Pages, err = r.getPresentationPages(ctx, presentationId)
 	if err != nil {
-		log.Println("[GetById] error in QueryContext", err)
+		log.Println("[GetById] Error getPresentationPages", err)
 		return nil, err
 	}
-	defer rows.Close()
 
-	var pages []entities.Page
-	for rows.Next() {
-		var page entities.Page
-		err = rows.Scan(
-			&page.Id,
-			&page.PresentationId,
-			&page.Duration,
-			&page.Component,
-			&page.StatusCode,
-			&page.CreatedAt,
-			&page.ModifiedAt,
-		)
-		if err != nil {
-			log.Println("[GetById] error in Scan", err)
-			return nil, err
-		}
-
-		pages = append(pages, page)
-	}
-	presentation.Pages = pages
-
-	return &presentation, nil
+	return presentation, nil
 }
 
-func (r repository) getPresentation(ctx context.Context, presentationId int64) (*entities.Presentation, error) {
+func (r repository) getPresentation(ctx context.Context, presentationId int64, userId int64) (*entities.Presentation, error) {
 	//language=sql
 	query := `
 	SELECT id, 
@@ -389,10 +331,10 @@ func (r repository) getPresentation(ctx context.Context, presentationId int64) (
 	       created_at, 
 	       modified_at
 	FROM presentation
-	WHERE id = ?`
+	WHERE id = ? AND id_user = ? AND status_code = ?`
 
 	var presentation entities.Presentation
-	err := r.db.QueryRowContext(ctx, query, presentationId).Scan(
+	err := r.db.QueryRowContext(ctx, query, presentationId, userId, entities.StatusOk).Scan(
 		&presentation.Id,
 		&presentation.ResolutionId,
 		&presentation.Name,
@@ -419,10 +361,10 @@ func (r repository) getPresentationPages(ctx context.Context, presentationId int
 	       created_at, 
 	       modified_at
 	FROM page
-	WHERE id_presentation = ?
+	WHERE id_presentation = ? AND status_code = ?
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, presentationId)
+	rows, err := r.db.QueryContext(ctx, query, presentationId, entities.StatusOk)
 	if err != nil {
 		log.Println("[getPresentationPages] Error QueryContext", err)
 		return nil, err

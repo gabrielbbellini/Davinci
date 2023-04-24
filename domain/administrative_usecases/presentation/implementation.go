@@ -122,6 +122,9 @@ func (u useCases) GetById(ctx context.Context, id int64, userId int64) (*entitie
 		log.Println("[GetById] Error GetById", err)
 		return nil, http_error.NewInternalServerError("Erro ao consultar apresentação.")
 	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http_error.NewBadRequestError("Apresentação não encontrada.")
+	}
 
 	return presentation, nil
 }
