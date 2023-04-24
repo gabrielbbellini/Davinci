@@ -6,7 +6,6 @@ import (
 	"davinci/domain/entities"
 	"davinci/settings"
 	"davinci/view/http_error"
-	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 )
@@ -46,7 +45,7 @@ func (r repository) getUserByEmail(ctx context.Context, email string) (*entities
 	       name, 
 	       email, 
 	       password, 
-	       roleId, 
+	       id_role, 
 	       status_code
 	FROM user
 	WHERE email = ?
@@ -62,10 +61,6 @@ func (r repository) getUserByEmail(ctx context.Context, email string) (*entities
 		&user.StatusCode,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			log.Println("[getUserByEmail] Error sql.ErrNoRows")
-			return nil, http_error.NewForbiddenError("Credenciais inválidas")
-		}
 		log.Println("[getByEmail] Error QueryRowContext", err)
 		return nil, http_error.NewInternalServerError(err.Error())
 	}
