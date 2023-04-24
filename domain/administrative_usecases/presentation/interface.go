@@ -7,13 +7,13 @@ import (
 
 type UseCases interface {
 	// Create new device.
-	Create(ctx context.Context, presentation entities.Presentation, userId int64) error
+	Create(ctx context.Context, presentation entities.Presentation, userId int64) (int64, error)
 
 	// Update update a device.
-	Update(ctx context.Context, presentation entities.Presentation, userId int64) error
+	Update(ctx context.Context, presentationId int64, presentation entities.Presentation, userId int64) error
 
 	// Delete remove a device.
-	Delete(ctx context.Context, presentation entities.Presentation, userId int64) error
+	Delete(ctx context.Context, presentationId int64, userId int64) error
 
 	// GetAll return all devices.
 	GetAll(ctx context.Context, userId int64) ([]entities.Presentation, error)
