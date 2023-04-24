@@ -1,7 +1,7 @@
 package administrative_view
 
 import (
-	"davinci/domain/administrative_usecases/device"
+	dev "davinci/domain/administrative_usecases/device"
 	"davinci/domain/entities"
 	"davinci/settings"
 	"davinci/view"
@@ -15,11 +15,11 @@ import (
 )
 
 type newHTTPDeviceModule struct {
-	useCases device.UseCases
+	useCases dev.UseCases
 	settings settings.Settings
 }
 
-func NewHTTPDeviceModule(settings settings.Settings, useCases device.UseCases) view.HttpModule {
+func NewHTTPDeviceModule(settings settings.Settings, useCases dev.UseCases) view.HttpModule {
 	return &newHTTPDeviceModule{
 		useCases: useCases,
 		settings: settings,
@@ -45,17 +45,17 @@ func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var dev entities.Device
-	err = json.Unmarshal(read, &dev)
+	var device entities.Device
+	err = json.Unmarshal(read, &device)
 	if err != nil {
 		log.Println("[create] Error Unmarshal", err)
-		http_error.HandleError(w, http_error.NewBadRequestError("dispositivo inválido"))
+		http_error.HandleError(w, http_error.NewBadRequestError("Dispositivo inválido."))
 		return
 	}
 
-	err = n.useCases.Create(ctx, dev, user.Id)
+	err = n.useCases.Create(ctx, device, user.Id)
 	if err != nil {
-		log.Println("[Create] Error", err)
+		log.Println("[Create] Error Create", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -71,23 +71,39 @@ func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
 func (n newHTTPDeviceModule) update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := ctx.Value("user").(entities.User)
-	request := r.Body
-	read, err := io.ReadAll(request)
+
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Println("[update] Error ReadAll", err)
+		http_error.HandleError(w, err)
 		return
 	}
 
-	var dev entities.Device
-	err = json.Unmarshal(read, &dev)
+	var device entities.Device
+	err = json.Unmarshal(b, &device)
 	if err != nil {
+		log.Println("[update] Error ReadAll", err)
+		http_error.HandleError(w, http_error.NewBadRequestError("Dispositivo inválido."))
 		return
 	}
 
-	dev.Id, err = strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
-
-	err = n.useCases.Update(ctx, dev, user.Id)
+	deviceId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
-		log.Println("[Update] Error", err)
+		log.Println("[update] Error ParseInt")
+		http_error.HandleError(w, err)
+		return
+	}
+
+	err = n.useCases.Update(ctx, deviceId, device, user.Id)
+	if err != nil {
+		log.Println("[Update] Error Update", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	_, err = w.Write([]byte("success"))
+	if err != nil {
+		log.Println("[Update] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -107,6 +123,13 @@ func (n newHTTPDeviceModule) delete(w http.ResponseWriter, r *http.Request) {
 	err = n.useCases.Delete(ctx, deviceId, user.Id)
 	if err != nil {
 		log.Println("[delete] Error Delete", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
+	_, err = w.Write([]byte("success"))
+	if err != nil {
+		log.Println("[delete] Error Write", err)
 		http_error.HandleError(w, err)
 		return
 	}
@@ -132,6 +155,7 @@ func (n newHTTPDeviceModule) getAll(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(b)
 	if err != nil {
 		log.Println("[getAll] Error Write", err)
+		http_error.HandleError(w, err)
 		return
 	}
 }

@@ -1,10 +1,12 @@
 package device
 
 import (
+	"database/sql"
 	"davinci/domain/entities"
 	deviceRepository "davinci/infrastructure/administrative_repository/device"
 	"davinci/infrastructure/administrative_repository/resolution"
 	"davinci/settings"
+	"errors"
 
 	"context"
 	"davinci/view/http_error"
@@ -56,16 +58,25 @@ func (u useCases) Create(ctx context.Context, device entities.Device, userId int
 		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
+	_, err = u.deviceRepository.GetDeviceByName(ctx, device.Name, userId)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Create] Error GetDeviceByName")
+		return http_error.NewInternalServerError("Erro ao cadastrar dispositivo")
+	}
+	if err == nil {
+		return http_error.NewBadRequestError("Já existe um dispositivo com o mesmo nome.")
+	}
+
 	err = u.deviceRepository.Create(ctx, device, userId)
 	if err != nil {
 		log.Println("[Create] Error Create")
-		return http_error.NewInternalServerError(err.Error())
+		return http_error.NewInternalServerError("Erro ao cadastrar dispositivo")
 	}
 
 	return nil
 }
 
-func (u useCases) Update(ctx context.Context, device entities.Device, userId int64) error {
+func (u useCases) Update(ctx context.Context, deviceId int64, device entities.Device, userId int64) error {
 	if device.Name = strings.TrimSpace(device.Name); device.Name == "" {
 		log.Println("[Update] Error device.Name == \"\"")
 		return http_error.NewBadRequestError("Nome do dispositivo deve ser informado.")
@@ -92,16 +103,31 @@ func (u useCases) Update(ctx context.Context, device entities.Device, userId int
 
 	if !isResolutionValid {
 		log.Println("[Update] error !isResolutionValid", err)
-		return http_error.NewInternalServerError("Resolução não é válida.")
+		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
-	_, err = u.deviceRepository.GetById(ctx, device.Id, userId)
+	deviceOld, err := u.deviceRepository.GetById(ctx, deviceId, userId)
 	if err != nil {
 		log.Println("[Update] Error GetById", err)
-		return http_error.NewInternalServerError("Device não encontrado")
+		return http_error.NewBadRequestError("Dispositivo não encontrado")
 	}
 
-	return u.deviceRepository.Update(ctx, device, userId)
+	deviceByName, err := u.deviceRepository.GetDeviceByName(ctx, device.Name, userId)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Println("[Update] Error GetDeviceByName")
+		return http_error.NewInternalServerError("Erro ao cadastrar dispositivo")
+	}
+	if err == nil && deviceByName.Id != deviceOld.Id {
+		return http_error.NewBadRequestError("Já existe um dispositivo com o mesmo nome.")
+	}
+
+	err = u.deviceRepository.Update(ctx, deviceId, device, userId)
+	if err != nil {
+		log.Println("[Update] Error GetById", err)
+		return http_error.NewInternalServerError("Erro ao editar dispositivo")
+	}
+
+	return nil
 }
 
 func (u useCases) Delete(ctx context.Context, deviceId int64, userId int64) error {

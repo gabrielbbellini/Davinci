@@ -10,7 +10,7 @@ type UseCases interface {
 	Create(ctx context.Context, device entities.Device, userId int64) error
 
 	// Update update a device.
-	Update(ctx context.Context, device entities.Device, userId int64) error
+	Update(ctx context.Context, deviceId int64, device entities.Device, userId int64) error
 
 	// Delete remove a device.
 	Delete(ctx context.Context, deviceId int64, userId int64) error

@@ -49,7 +49,7 @@ func (r repository) Create(ctx context.Context, device entities.Device, userId i
 	return nil
 }
 
-func (r repository) Update(ctx context.Context, device entities.Device, userId int64) error {
+func (r repository) Update(ctx context.Context, deviceId int64, device entities.Device, userId int64) error {
 	command := `
 	UPDATE device
 	SET name = ?, 
@@ -65,7 +65,7 @@ func (r repository) Update(ctx context.Context, device entities.Device, userId i
 		device.Name,
 		device.ResolutionId,
 		device.Orientation,
-		device.Id,
+		deviceId,
 		userId,
 	)
 	if err != nil {
@@ -169,6 +169,42 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 
 	if err != nil {
 		log.Println("[GetById] Error Scan", err)
+		return nil, err
+	}
+
+	return &device, nil
+}
+
+func (r repository) GetDeviceByName(ctx context.Context, deviceName string, userId int64) (*entities.Device, error) {
+	//language=sql
+	query := `
+	SELECT d.id,
+	       d.name,
+	       d.id_orientation,
+	       d.status_code, 
+	       d.id_resolution
+	FROM device d
+	WHERE d.name = ? AND 
+	      d.id_user = ? AND
+	      d.status_code = ?`
+
+	var device entities.Device
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		deviceName,
+		userId,
+		entities.StatusOk,
+	).Scan(
+		&device.Id,
+		&device.Name,
+		&device.Orientation,
+		&device.StatusCode,
+		&device.ResolutionId,
+	)
+
+	if err != nil {
+		log.Println("[GetDeviceByName] Error Scan", err)
 		return nil, err
 	}
 
