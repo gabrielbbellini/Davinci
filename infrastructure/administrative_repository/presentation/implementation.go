@@ -36,10 +36,10 @@ func (r repository) Create(ctx context.Context, presentation entities.Presentati
 	}
 
 	for _, page := range presentation.Pages {
-		_, err = r.createPage(ctx, tx, page, presentationId)
+		_, err = r.createPresentationPage(ctx, tx, presentationId, page)
 		if err != nil {
 			_ = tx.Rollback()
-			log.Println("[Create] Error createPage", err)
+			log.Println("[Create] Error createPresentationPage", err)
 			return 0, err
 		}
 	}
@@ -82,7 +82,7 @@ func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presenta
 	return presentationId, nil
 }
 
-func (r repository) createPage(ctx context.Context, tx *sql.Tx, page entities.Page, presentationId int64) (int64, error) {
+func (r repository) createPresentationPage(ctx context.Context, tx *sql.Tx, presentationId int64, page entities.Page) (int64, error) {
 	command := `
 	INSERT INTO page (id_presentation, component, duration)
 	VALUES (?,?,?)
@@ -131,11 +131,18 @@ func (r repository) Update(ctx context.Context, presentationId int64, presentati
 		return err
 	}
 
+	err = r.deletePresentationPages(ctx, tx, presentationId)
+	if err != nil {
+		_ = tx.Rollback()
+		log.Println("[Update] Error deletePresentationPages", err)
+		return err
+	}
+
 	for _, page := range presentation.Pages {
-		err = r.updatePage(ctx, tx, presentationId, page)
+		_, err = r.createPresentationPage(ctx, tx, presentationId, page)
 		if err != nil {
 			_ = tx.Rollback()
-			log.Println("[Update] Error updatePage", err)
+			log.Println("[Update] Error createPage", err)
 			return err
 		}
 	}
@@ -167,34 +174,6 @@ func (r repository) updatePresentation(ctx context.Context, tx *sql.Tx, presenta
 
 	if err != nil {
 		log.Println("[updatePresentation] Error ExecContext", err)
-		return err
-	}
-
-	return nil
-}
-
-func (r repository) updatePage(ctx context.Context, tx *sql.Tx, presentationId int64, page entities.Page) error {
-	command := `
-	UPDATE page 
-	SET id_presentation = ? , component = ?, duration = ?
-	WHERE id = ?`
-
-	var err error
-
-	b, err := json.Marshal(page.Component)
-	if err != nil {
-		log.Println("[updatePage] Error Marshal", err)
-		return err
-	}
-	componentString := string(b)
-
-	if tx != nil {
-		_, err = tx.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
-	} else {
-		_, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration, presentationId)
-	}
-	if err != nil {
-		log.Println("[updatePage] Error ExecContext", err)
 		return err
 	}
 
@@ -249,17 +228,17 @@ func (r repository) deletePresentation(ctx context.Context, tx *sql.Tx, presenta
 	return nil
 }
 
+// TODO: GET THE KNOWLEDGE IF THE BEST WAY IS REALLY DELETE THE PAGE INSTEAD OF CHANGE STATUS CODE.
 func (r repository) deletePresentationPages(ctx context.Context, tx *sql.Tx, presentationId int64) error {
 	command := `
-	UPDATE page 
-	SET status_code = ?
+	DELETE FROM page
 	WHERE id_presentation = ?`
 
 	var err error
 	if tx != nil {
-		_, err = r.db.ExecContext(ctx, command, entities.StatusDeleted, presentationId)
+		_, err = tx.ExecContext(ctx, command, presentationId)
 	} else {
-		_, err = r.db.ExecContext(ctx, command, entities.StatusDeleted, presentationId)
+		_, err = r.db.ExecContext(ctx, command, presentationId)
 	}
 	if err != nil {
 		log.Println("[deletePresentationPages] Error ExecContext", err)
