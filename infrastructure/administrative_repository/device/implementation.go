@@ -100,7 +100,9 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 	       d.name,
 	       d.id_orientation,
 	       d.status_code,
-		   d.id_resolution
+		   d.id_resolution,
+		   d.created_at,
+		   d.modified_at
 	FROM device d
 	WHERE id_user = ? AND 
 	      d.status_code = ?
@@ -122,6 +124,8 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 			&device.Orientation,
 			&device.StatusCode,
 			&device.ResolutionId,
+			&device.CreatedAt,
+			&device.ModifiedAt,
 		)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -145,7 +149,9 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 	       d.name,
 	       d.id_orientation,
 	       d.status_code, 
-	       d.id_resolution
+	       d.id_resolution,
+	       d.created_at,
+	       d.modified_at
 	FROM device d
 	WHERE d.id = ? AND 
 	      d.id_user = ? AND
@@ -165,6 +171,8 @@ func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (
 		&device.Orientation,
 		&device.StatusCode,
 		&device.ResolutionId,
+		&device.CreatedAt,
+		&device.ModifiedAt,
 	)
 
 	if err != nil {
