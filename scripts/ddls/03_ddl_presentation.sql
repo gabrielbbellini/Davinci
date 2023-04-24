@@ -1,12 +1,13 @@
 CREATE TABLE IF NOT EXISTS presentation
 (
-    id            INTEGER     NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    id_resolution INTEGER     NOT NULL REFERENCES resolution (id),
-    id_user       INTEGER     NOT NULL REFERENCES user (id),
-    name          VARCHAR(30) NOT NULL,
-    status_code   TINYINT     NOT NULL DEFAULT 0,
-    created_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_at   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id             INTEGER     NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id_resolution  INTEGER     NOT NULL REFERENCES resolution (id),
+    id_orientation INTEGER     NOT NULL,
+    id_user        INTEGER     NOT NULL REFERENCES user (id),
+    name           VARCHAR(30) NOT NULL,
+    status_code    TINYINT     NOT NULL DEFAULT 0,
+    created_at     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 ALTER TABLE presentation

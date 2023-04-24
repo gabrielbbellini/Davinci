@@ -55,17 +55,17 @@ func (r repository) Create(ctx context.Context, presentation entities.Presentati
 
 func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presentation entities.Presentation, userId int64) (int64, error) {
 	command := `
-	INSERT INTO presentation (name, id_user, id_resolution)
-	VALUES (?,?,?)
+	INSERT INTO presentation (name, id_user, id_resolution, id_orientation)
+	VALUES (?,?,?, ?)
 	`
 
 	var result sql.Result
 	var err error
 
 	if tx != nil {
-		result, err = tx.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId)
+		result, err = tx.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId, presentation.Orientation)
 	} else {
-		result, err = r.db.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId)
+		result, err = r.db.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId, presentation.Orientation)
 	}
 
 	if err != nil {
@@ -118,9 +118,9 @@ func (r repository) createPage(ctx context.Context, tx *sql.Tx, page entities.Pa
 }
 
 func (r repository) Update(ctx context.Context, presentationId int64, presentation entities.Presentation, userId int64) error {
-	tx, err := r.db.Begin()
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		log.Println("[Update] error in Begin tx", err)
+		log.Println("[Update] Error BeginTx", err)
 		return err
 	}
 
@@ -152,14 +152,17 @@ func (r repository) Update(ctx context.Context, presentationId int64, presentati
 func (r repository) updatePresentation(ctx context.Context, tx *sql.Tx, presentationId int64, presentation entities.Presentation, userId int64) error {
 	command := `
 	UPDATE presentation 
-	SET name = ?, id_resolution = ?
-	WHERE id = ? AND id_user = ?`
+	SET name = ?, 
+	    id_resolution = ?,
+	    id_orientation = ?
+	WHERE id = ? AND 
+	      id_user = ?`
 
 	var err error
 	if tx != nil {
-		_, err = tx.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentationId, userId)
+		_, err = tx.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentation.Orientation, presentationId, userId)
 	} else {
-		_, err = r.db.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentationId, userId)
+		_, err = r.db.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentation.Orientation, presentationId, userId)
 	}
 
 	if err != nil {
