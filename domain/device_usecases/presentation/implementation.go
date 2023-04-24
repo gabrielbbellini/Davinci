@@ -22,7 +22,7 @@ func NewUseCases(presentationRepo presentation.Repository) UseCases {
 
 func (u useCases) GetCurrentPresentation(ctx context.Context, deviceId int64) (*entities.Presentation, error) {
 	currentPresentation, err := u.presentationRepo.GetCurrentPresentation(ctx, deviceId)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println("[GetCurrentPresentation] Error GetCurrentPresentation", err)
 		return nil, http_error.NewInternalServerError("Erro ao consultar apresentação atual.")
 	}

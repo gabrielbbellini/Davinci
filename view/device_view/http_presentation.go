@@ -2,6 +2,7 @@ package device_view
 
 import (
 	"davinci/domain/device_usecases/presentation"
+	"davinci/domain/entities"
 	"davinci/view"
 	"davinci/view/http_error"
 	"encoding/json"
@@ -26,9 +27,9 @@ func (n newHTTPPresentationModule) Setup(router *mux.Router) {
 
 func (n newHTTPPresentationModule) getCurrentPresentation(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	deviceId := ctx.Value("deviceId").(int64)
+	device := ctx.Value("device").(entities.Device)
 
-	presentations, err := n.useCases.GetCurrentPresentation(ctx, deviceId)
+	presentations, err := n.useCases.GetCurrentPresentation(ctx, device.Id)
 	if err != nil {
 		log.Println("[getCurrentPresentation] Error", err)
 		http_error.HandleError(w, err)

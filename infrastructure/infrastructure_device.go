@@ -7,6 +7,8 @@ import (
 	device_usecases "davinci/domain/device_usecases/device"
 	presentation_usecases "davinci/domain/device_usecases/presentation"
 	resolution_usecases "davinci/domain/device_usecases/resolution"
+	"davinci/domain/entities"
+	"encoding/json"
 
 	authorization_repository "davinci/infrastructure/device_repository/authorization"
 	device_repository "davinci/infrastructure/device_repository/device"
@@ -21,7 +23,6 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func setupDeviceModules(settings settings.Settings, router *mux.Router, db *sql.DB) error {
@@ -87,21 +88,22 @@ func deviceAuthorizationMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		deviceIdString, ok := claims["deviceId"]
+		deviceString, ok := claims["device"]
 		if !ok {
 			log.Println("[deviceAuthorizationMiddleware] Error !ok", err)
 			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
 			return
 		}
 
-		deviceId, err := strconv.Atoi(deviceIdString.(string))
+		var device entities.Device
+		err = json.Unmarshal([]byte(deviceString.(string)), &device)
 		if err != nil {
 			log.Println("[deviceAuthorizationMiddleware] Error strconv.Atoi", err)
 			http_error.HandleError(w, http_error.NewUnauthorizedError("Token inválido"))
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "deviceId", deviceId)
+		ctx := context.WithValue(r.Context(), "device", device)
 
 		//Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r.WithContext(ctx))

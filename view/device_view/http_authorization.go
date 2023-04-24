@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 type newHTTPAuthorizationModule struct {
@@ -51,9 +50,16 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	deviceByte, err := json.Marshal(*device)
+	if err != nil {
+		log.Println("[login] Error Marshal", err)
+		http_error.HandleError(w, err)
+		return
+	}
+
 	// TODO: store secret key in a safe place.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"deviceId": strconv.FormatInt(device.Id, 10),
+		"device": string(deviceByte),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("DAVINCI_SECRET_KEY")))
