@@ -21,8 +21,6 @@ func NewResolutionRepository(settings settings.Settings, db *sql.DB) Repository 
 }
 
 func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
-	var resolutions []entities.Resolution
-
 	query := `
 	SELECT id,
 	       width,
@@ -37,27 +35,46 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Resolution, error) {
 	}
 	defer rows.Close()
 
+	var resolutions []entities.Resolution
 	for rows.Next() {
-		var res entities.Resolution
-
+		var resolution entities.Resolution
 		err = rows.Scan(
-			&res.Id,
-			&res.Width,
-			&res.Height,
-			&res.StatusCode,
+			&resolution.Id,
+			&resolution.Width,
+			&resolution.Height,
+			&resolution.StatusCode,
 		)
 		if err != nil {
-			log.Printf("Error in [Scan]: %v", err)
+			log.Println("[GetAll] Error Scan", err)
 			return nil, err
 		}
 
-		resolutions = append(resolutions, res)
+		resolutions = append(resolutions, resolution)
 	}
 
 	return resolutions, nil
 }
 
-func (r repository) GetById(ctx context.Context, id int64) (entities.Resolution, error) {
-	var res entities.Resolution
-	return res, nil
+func (r repository) GetById(ctx context.Context, resolutionId int64) (*entities.Resolution, error) {
+	query := `
+	SELECT id,
+	       width,
+	       height,
+	       status_code
+	FROM resolution
+	WHERE id = ?`
+
+	var resolution entities.Resolution
+	err := r.db.QueryRowContext(ctx, query, resolutionId).Scan(
+		&resolution.Id,
+		&resolution.Width,
+		&resolution.Height,
+		&resolution.StatusCode,
+	)
+	if err != nil {
+		log.Println("[GetById] Error Scan", err)
+		return nil, err
+	}
+
+	return &resolution, nil
 }

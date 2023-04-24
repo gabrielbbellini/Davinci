@@ -35,5 +35,5 @@ func (u useCases) GetById(ctx context.Context, resolutionId int64) (*entities.Re
 		log.Println("[GetAll] Error GetById")
 		return nil, err
 	}
-	return &resolution, nil
+	return resolution, nil
 }
