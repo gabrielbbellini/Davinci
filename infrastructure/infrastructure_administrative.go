@@ -52,7 +52,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		pathTemplate, err := mux.CurrentRoute(r).GetPathTemplate()
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
 		}
 
@@ -64,7 +64,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		token, err := getTokenFromRequest(r)
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error getTokenFromRequest", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
 		}
 
@@ -72,21 +72,21 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		if !token.Valid {
 			//If the token is not valid, return an error
 			log.Println("[authorizationMiddleware] Error !token.Valid", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok && !token.Valid {
 			log.Println("[authorizationMiddleware] Error !ok && !token.Valid", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
 		}
 
 		userString, ok := claims["user"]
 		if !ok {
 			log.Println("[authorizationMiddleware] Error !ok", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
 		}
 
@@ -94,7 +94,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		err = json.Unmarshal([]byte(userString.(string)), &user)
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error json.Unmarshal", err)
-			http_error.HandleError(w, http_error.NewUnauthorizedError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
 		}
 
