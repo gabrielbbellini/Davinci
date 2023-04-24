@@ -56,7 +56,7 @@ func (r repository) Create(ctx context.Context, presentation entities.Presentati
 func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presentation entities.Presentation, userId int64) (int64, error) {
 	command := `
 	INSERT INTO presentation (name, id_user, id_resolution, id_orientation)
-	VALUES (?,?,?, ?)
+	VALUES (?,?,?,?)
 	`
 
 	var result sql.Result
@@ -274,6 +274,8 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Presen
 	SELECT p.id,
 	       p.name,
 	       p.status_code, 
+		   p.id_resolution,
+		   p.id_orientation,
 	       p.created_at, 
 	       p.modified_at
 	FROM presentation as p
@@ -294,6 +296,8 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Presen
 			&presentation.Id,
 			&presentation.Name,
 			&presentation.StatusCode,
+			&presentation.ResolutionId,
+			&presentation.Orientation,
 			&presentation.CreatedAt,
 			&presentation.ModifiedAt,
 		)
@@ -329,6 +333,7 @@ func (r repository) getPresentation(ctx context.Context, presentationId int64, u
 	query := `
 	SELECT id, 
 	       id_resolution, 
+	       id_orientation, 
 	       name, 
 	       status_code, 
 	       created_at, 
@@ -340,6 +345,7 @@ func (r repository) getPresentation(ctx context.Context, presentationId int64, u
 	err := r.db.QueryRowContext(ctx, query, presentationId, userId, entities.StatusOk).Scan(
 		&presentation.Id,
 		&presentation.ResolutionId,
+		&presentation.Orientation,
 		&presentation.Name,
 		&presentation.StatusCode,
 		&presentation.CreatedAt,
