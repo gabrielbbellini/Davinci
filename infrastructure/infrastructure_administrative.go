@@ -90,7 +90,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		var user entities.User
+		var user entities.UserCredential
 		err = json.Unmarshal([]byte(userString.(string)), &user)
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error json.Unmarshal", err)

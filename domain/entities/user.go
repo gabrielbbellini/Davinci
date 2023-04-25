@@ -13,3 +13,9 @@ type User struct {
 	ModifiedAt util.DateTime `json:"modifiedAt"`
 	StatusCode int64         `json:"statusCode"`
 }
+
+type UserCredential struct {
+	Id     int64
+	RoleId int64
+	Email  string
+}

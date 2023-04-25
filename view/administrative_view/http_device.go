@@ -36,7 +36,7 @@ func (n newHTTPDeviceModule) Setup(router *mux.Router) {
 
 func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	read, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -70,7 +70,7 @@ func (n newHTTPDeviceModule) create(w http.ResponseWriter, r *http.Request) {
 
 func (n newHTTPDeviceModule) update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -111,7 +111,7 @@ func (n newHTTPDeviceModule) update(w http.ResponseWriter, r *http.Request) {
 
 func (n newHTTPDeviceModule) delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	deviceId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -137,7 +137,7 @@ func (n newHTTPDeviceModule) delete(w http.ResponseWriter, r *http.Request) {
 
 func (n newHTTPDeviceModule) getAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 	devices, err := n.useCases.GetAll(ctx, user.Id)
 	if err != nil {
 		log.Println("[getAll] Error", err)
@@ -164,7 +164,7 @@ func (n newHTTPDeviceModule) getById(w http.ResponseWriter, r *http.Request) {
 	deviceId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 	devices, err := n.useCases.GetById(ctx, deviceId, user.Id)
 	if err != nil {
 		log.Println("[getById] Error", err)

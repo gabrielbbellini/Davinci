@@ -36,7 +36,7 @@ func (n newHTTPPresentationModule) Setup(router *mux.Router) {
 
 func (n newHTTPPresentationModule) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -70,7 +70,7 @@ func (n newHTTPPresentationModule) create(w http.ResponseWriter, r *http.Request
 
 func (n newHTTPPresentationModule) update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -111,7 +111,7 @@ func (n newHTTPPresentationModule) update(w http.ResponseWriter, r *http.Request
 
 func (n newHTTPPresentationModule) delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	presentationId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -137,7 +137,7 @@ func (n newHTTPPresentationModule) delete(w http.ResponseWriter, r *http.Request
 
 func (n newHTTPPresentationModule) getAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 
 	presentations, err := n.useCases.GetAll(ctx, user.Id)
 	if err != nil {
@@ -170,7 +170,7 @@ func (n newHTTPPresentationModule) getById(w http.ResponseWriter, r *http.Reques
 	}
 
 	ctx := r.Context()
-	user := ctx.Value("user").(entities.User)
+	user := ctx.Value("user").(entities.UserCredential)
 	presentations, err := n.useCases.GetById(ctx, presentationId, user.Id)
 	if err != nil {
 		log.Println("[getById] Error GetById", err)

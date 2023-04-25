@@ -55,7 +55,13 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userByte, err := json.Marshal(*user)
+	userClaim := &entities.UserCredential{
+		Id:     user.Id,
+		Email:  user.Credential.Email,
+		RoleId: user.Credential.RoleId,
+	}
+
+	userClaimByte, err := json.Marshal(*userClaim)
 	if err != nil {
 		log.Println("[login] Error Marshal", err)
 		http_error.HandleError(w, err)
@@ -63,7 +69,7 @@ func (n newHTTPAuthorizationModule) login(w http.ResponseWriter, r *http.Request
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": string(userByte),
+		"user": string(userClaimByte),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("DAVINCI_SECRET_KEY")))
