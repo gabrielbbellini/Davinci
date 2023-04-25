@@ -27,6 +27,7 @@ type DataBase struct {
 }
 
 // GetDBSource return the database driver connection source.
+// The result is a source like: "root:root@tcp(localhost:3306)/dbname?parseTime=true"
 func (database *DataBase) GetDBSource() string {
 	credentials := database.User + ":" + database.Password
 	connection := "@tcp(" + database.Host + ":" + database.Port + ")"
