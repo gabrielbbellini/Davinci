@@ -68,9 +68,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//Check if the token is valid
 		if !token.Valid {
-			//If the token is not valid, return an error
 			log.Println("[authorizationMiddleware] Error !token.Valid", err)
 			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
 			return
