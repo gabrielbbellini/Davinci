@@ -1,5 +1,11 @@
 package settings
 
+// Settings Davinci project settings.
+type Settings struct {
+	Server
+	DataBase
+}
+
 // Server settings
 type Server struct {
 	Host string `yaml:"host"`
@@ -9,11 +15,6 @@ type Server struct {
 // GetDomain return the server domain URL.
 func (server *Server) GetDomain() string {
 	return server.Host + ":" + server.Port
-}
-
-// Authentication settings.
-type Authentication struct {
-	JWTSecretKey string `yaml:"JWTSecretKey"`
 }
 
 // DataBase settings.
@@ -30,11 +31,4 @@ func (database *DataBase) GetDBSource() string {
 	credentials := database.User + ":" + database.Password
 	connection := "@tcp(" + database.Host + ":" + database.Port + ")"
 	return credentials + connection + "/" + database.Name + "?parseTime=true"
-}
-
-// Settings Davinci project settings.
-type Settings struct {
-	Server
-	DataBase
-	Authentication
 }
