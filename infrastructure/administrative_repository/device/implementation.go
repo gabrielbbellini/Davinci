@@ -50,7 +50,7 @@ func (r repository) Create(ctx context.Context, device entities.Device, userId i
 }
 
 func (r repository) Update(ctx context.Context, deviceId int64, device entities.Device, userId int64) error {
-	command := `
+	query := `
 	UPDATE device
 	SET name = ?, 
 	    id_resolution = ?, 
@@ -61,7 +61,7 @@ func (r repository) Update(ctx context.Context, deviceId int64, device entities.
 
 	_, err := r.db.ExecContext(
 		ctx,
-		command,
+		query,
 		device.Name,
 		device.ResolutionId,
 		device.Orientation,
@@ -78,14 +78,14 @@ func (r repository) Update(ctx context.Context, deviceId int64, device entities.
 
 func (r repository) Delete(ctx context.Context, deviceId int64, userId int64) error {
 	//language=sql
-	command := `
+	query := `
 	UPDATE device 
 	SET status_code = ?
 	WHERE id = ? 
 	  AND id_user = ?
 	`
 
-	_, err := r.db.ExecContext(ctx, command, entities.StatusDeleted, deviceId, userId)
+	_, err := r.db.ExecContext(ctx, query, entities.StatusDeleted, deviceId, userId)
 	if err != nil {
 		log.Println("[Delete] Error ExecContext", err)
 		return err
@@ -131,7 +131,6 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 			if errors.Is(err, sql.ErrNoRows) {
 				return nil, nil
 			}
-
 			log.Println("[GetAll] Error Scan", err)
 			return nil, err
 		}
@@ -145,17 +144,17 @@ func (r repository) GetAll(ctx context.Context, userId int64) ([]entities.Device
 func (r repository) GetById(ctx context.Context, deviceId int64, userId int64) (*entities.Device, error) {
 	//language=sql
 	query := `
-	SELECT d.id,
-	       d.name,
-	       d.id_orientation,
-	       d.status_code, 
-	       d.id_resolution,
-	       d.created_at,
-	       d.modified_at
-	FROM device d
-	WHERE d.id = ? AND 
-	      d.id_user = ? AND
-	      d.status_code = ?
+	SELECT id,
+	       name,
+	       id_orientation,
+	       status_code, 
+	       id_resolution,
+	       created_at,
+	       modified_at
+	FROM device
+	WHERE id = ? AND 
+	      id_user = ? AND
+	      status_code = ?
 	`
 
 	var device entities.Device

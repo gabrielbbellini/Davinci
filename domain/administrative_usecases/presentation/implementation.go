@@ -44,7 +44,6 @@ func (u useCases) Create(ctx context.Context, presentation entities.Presentation
 		return 0, http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
 	if errors.Is(err, sql.ErrNoRows) {
-		log.Println("[Create] Error resolution is not valid.", err)
 		return 0, http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
@@ -83,7 +82,6 @@ func (u useCases) Update(ctx context.Context, presentationId int64, presentation
 		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
 	if errors.Is(err, sql.ErrNoRows) {
-		log.Println("[Update] Error resolution is not valid.", err)
 		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
