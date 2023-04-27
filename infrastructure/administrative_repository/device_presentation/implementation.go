@@ -20,7 +20,8 @@ func (r repository) Relate(ctx context.Context, deviceId int64, presentationId i
 	//language=sql
 	query := `
 	INSERT INTO device_presentation (id_device, id_presentation) 
-	VALUES (?, ?)`
+	VALUES (?, ?)
+	ON DUPLICATE KEY UPDATE id_device = id_device, id_presentation = id_presentation`
 
 	_, err := r.db.ExecContext(ctx, query, deviceId, presentationId)
 	if err != nil {

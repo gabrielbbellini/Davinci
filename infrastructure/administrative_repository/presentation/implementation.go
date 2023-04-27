@@ -323,7 +323,13 @@ func (r repository) getPresentation(ctx context.Context, presentationId int64, u
 	      status_code = ?`
 
 	var presentation entities.Presentation
-	err := r.db.QueryRowContext(ctx, query, presentationId, userId, entities.StatusOk).Scan(
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		presentationId,
+		userId,
+		entities.StatusOk,
+	).Scan(
 		&presentation.Id,
 		&presentation.ResolutionId,
 		&presentation.Orientation,
