@@ -50,16 +50,15 @@ func setupDataBase(settings settings.Settings) (*sql.DB, error) {
 
 // setupModules set the MVC structure for the application.
 func setupModules(settings settings.Settings, router *mux.Router, db *sql.DB) error {
-	api := router.PathPrefix("/api").Subrouter()
-	api.Use(rootMiddleware)
+	router.Use(rootMiddleware)
 
-	err := setupAdministrativeModules(settings, api, db)
+	err := setupAdministrativeModules(settings, router, db)
 	if err != nil {
 		log.Println("[SetupMVC] Error setupAdministrativeModules", err)
 		return err
 	}
 
-	err = setupDeviceModules(settings, api, db)
+	err = setupDeviceModules(settings, router, db)
 	if err != nil {
 		log.Println("[SetupMVC] Error setupDeviceModules", err)
 		return err
@@ -71,9 +70,6 @@ func setupModules(settings settings.Settings, router *mux.Router, db *sql.DB) er
 // rootMiddleware set the response content type for the api as json.
 func rootMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//Set the response content type for the api as json
-		w.Header().Set("Content-Type", "application/json")
-
 		//Set the origin to allow all.
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
