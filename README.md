@@ -37,4 +37,4 @@ database:
 go run main.go
 ```
 
-If all the settigs where applied successfully the output is: "[main] Server is running on localhost:8000". Enjoy it!
+If all the settings where applied successfully the output is: "[main] Server is running on localhost:8000". Enjoy it!

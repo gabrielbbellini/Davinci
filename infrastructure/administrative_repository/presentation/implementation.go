@@ -54,7 +54,7 @@ func (r repository) Create(ctx context.Context, presentation entities.Presentati
 }
 
 func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presentation entities.Presentation, userId int64) (int64, error) {
-	command := `
+	query := `
 	INSERT INTO presentation (name, id_user, id_resolution, id_orientation)
 	VALUES (?,?,?,?)
 	`
@@ -63,9 +63,9 @@ func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presenta
 	var err error
 
 	if tx != nil {
-		result, err = tx.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId, presentation.Orientation)
+		result, err = tx.ExecContext(ctx, query, presentation.Name, userId, presentation.ResolutionId, presentation.Orientation)
 	} else {
-		result, err = r.db.ExecContext(ctx, command, presentation.Name, userId, presentation.ResolutionId, presentation.Orientation)
+		result, err = r.db.ExecContext(ctx, query, presentation.Name, userId, presentation.ResolutionId, presentation.Orientation)
 	}
 
 	if err != nil {
@@ -83,7 +83,7 @@ func (r repository) createPresentation(ctx context.Context, tx *sql.Tx, presenta
 }
 
 func (r repository) createPresentationPage(ctx context.Context, tx *sql.Tx, presentationId int64, page entities.Page) (int64, error) {
-	command := `
+	query := `
 	INSERT INTO page (id_presentation, component, duration)
 	VALUES (?,?,?)
 	`
@@ -99,9 +99,9 @@ func (r repository) createPresentationPage(ctx context.Context, tx *sql.Tx, pres
 	componentString := string(b)
 
 	if tx != nil {
-		result, err = tx.ExecContext(ctx, command, presentationId, componentString, page.Duration)
+		result, err = tx.ExecContext(ctx, query, presentationId, componentString, page.Duration)
 	} else {
-		result, err = r.db.ExecContext(ctx, command, presentationId, componentString, page.Duration)
+		result, err = r.db.ExecContext(ctx, query, presentationId, componentString, page.Duration)
 	}
 	if err != nil {
 		log.Println("[createPage] Error ExecContext", err)
@@ -157,7 +157,7 @@ func (r repository) Update(ctx context.Context, presentationId int64, presentati
 }
 
 func (r repository) updatePresentation(ctx context.Context, tx *sql.Tx, presentationId int64, presentation entities.Presentation, userId int64) error {
-	command := `
+	query := `
 	UPDATE presentation 
 	SET name = ?, 
 	    id_resolution = ?,
@@ -167,9 +167,9 @@ func (r repository) updatePresentation(ctx context.Context, tx *sql.Tx, presenta
 
 	var err error
 	if tx != nil {
-		_, err = tx.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentation.Orientation, presentationId, userId)
+		_, err = tx.ExecContext(ctx, query, presentation.Name, presentation.ResolutionId, presentation.Orientation, presentationId, userId)
 	} else {
-		_, err = r.db.ExecContext(ctx, command, presentation.Name, presentation.ResolutionId, presentation.Orientation, presentationId, userId)
+		_, err = r.db.ExecContext(ctx, query, presentation.Name, presentation.ResolutionId, presentation.Orientation, presentationId, userId)
 	}
 
 	if err != nil {
@@ -209,16 +209,16 @@ func (r repository) Delete(ctx context.Context, presentationId int64, userId int
 }
 
 func (r repository) deletePresentation(ctx context.Context, tx *sql.Tx, presentationId int64, userId int64) error {
-	command := `
+	query := `
 	UPDATE presentation 
 	SET status_code = ?
 	WHERE id = ? AND id_user = ?`
 
 	var err error
 	if tx != nil {
-		_, err = tx.ExecContext(ctx, command, entities.StatusDeleted, presentationId, userId)
+		_, err = tx.ExecContext(ctx, query, entities.StatusDeleted, presentationId, userId)
 	} else {
-		_, err = r.db.ExecContext(ctx, command, entities.StatusDeleted, presentationId, userId)
+		_, err = r.db.ExecContext(ctx, query, entities.StatusDeleted, presentationId, userId)
 	}
 	if err != nil {
 		log.Println("[deletePresentation] Error ExecContext", err)
@@ -230,15 +230,15 @@ func (r repository) deletePresentation(ctx context.Context, tx *sql.Tx, presenta
 
 // TODO: GET THE KNOWLEDGE IF THE BEST WAY IS REALLY DELETE THE PAGE INSTEAD OF CHANGE STATUS CODE.
 func (r repository) deletePresentationPages(ctx context.Context, tx *sql.Tx, presentationId int64) error {
-	command := `
+	query := `
 	DELETE FROM page
 	WHERE id_presentation = ?`
 
 	var err error
 	if tx != nil {
-		_, err = tx.ExecContext(ctx, command, presentationId)
+		_, err = tx.ExecContext(ctx, query, presentationId)
 	} else {
-		_, err = r.db.ExecContext(ctx, command, presentationId)
+		_, err = r.db.ExecContext(ctx, query, presentationId)
 	}
 	if err != nil {
 		log.Println("[deletePresentationPages] Error ExecContext", err)
@@ -318,10 +318,18 @@ func (r repository) getPresentation(ctx context.Context, presentationId int64, u
 	       created_at, 
 	       modified_at
 	FROM presentation
-	WHERE id = ? AND id_user = ? AND status_code = ?`
+	WHERE id = ? AND 
+	      id_user = ? AND 
+	      status_code = ?`
 
 	var presentation entities.Presentation
-	err := r.db.QueryRowContext(ctx, query, presentationId, userId, entities.StatusOk).Scan(
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		presentationId,
+		userId,
+		entities.StatusOk,
+	).Scan(
 		&presentation.Id,
 		&presentation.ResolutionId,
 		&presentation.Orientation,

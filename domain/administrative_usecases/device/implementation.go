@@ -45,7 +45,6 @@ func (u useCases) Create(ctx context.Context, device entities.Device, userId int
 		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
 	if errors.Is(err, sql.ErrNoRows) {
-		log.Println("[Create] Error resolution is not valid.", err)
 		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
@@ -84,14 +83,13 @@ func (u useCases) Update(ctx context.Context, deviceId int64, device entities.De
 		return http_error.NewInternalServerError("Erro ao consultar as resoluções disponíveis.")
 	}
 	if errors.Is(err, sql.ErrNoRows) {
-		log.Println("[Update] Error resolution is not valid.", err)
 		return http_error.NewBadRequestError("Resolução não é válida.")
 	}
 
 	deviceOld, err := u.deviceRepository.GetById(ctx, deviceId, userId)
 	if err != nil {
 		log.Println("[Update] Error GetById", err)
-		return http_error.NewBadRequestError("Dispositivo não encontrado")
+		return http_error.NewBadRequestError("Dispositivo não encontrado.")
 	}
 
 	deviceByName, err := u.deviceRepository.GetDeviceByName(ctx, device.Name, userId)

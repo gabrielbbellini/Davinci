@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	authorization_usecases "davinci/domain/administrative_usecases/authorization"
 	device_usecases "davinci/domain/administrative_usecases/device"
+	device_presentation_usecases "davinci/domain/administrative_usecases/device_presentation"
 	presentation_usecase "davinci/domain/administrative_usecases/presentation"
 	resolution_usecases "davinci/domain/administrative_usecases/resolution"
 	"davinci/domain/entities"
 	authorization_repository "davinci/infrastructure/administrative_repository/authorization"
 	device_repository "davinci/infrastructure/administrative_repository/device"
+	device_presentation_repository "davinci/infrastructure/administrative_repository/device_presentation"
 	presentation_repository "davinci/infrastructure/administrative_repository/presentation"
 	"davinci/infrastructure/administrative_repository/resolution"
 	"davinci/settings"
@@ -35,6 +37,9 @@ func setupAdministrativeModules(settings settings.Settings, router *mux.Router, 
 	presentationRepository := presentation_repository.NewPresentationRepository(settings, db)
 	presentationUseCase := presentation_usecase.NewUseCases(settings, resolutionRepository, presentationRepository)
 
+	devicePresentationRepository := device_presentation_repository.NewRepository(settings, db)
+	devicePresentationUseCases := device_presentation_usecases.NewUseCases(settings, devicePresentationRepository, deviceRepository, presentationRepository)
+
 	administrativeRouter := router.PathPrefix("/administrative").Subrouter()
 	administrativeRouter.Use(authorizationMiddleware)
 
@@ -42,6 +47,7 @@ func setupAdministrativeModules(settings settings.Settings, router *mux.Router, 
 	administrative_view.NewHTTPDeviceModule(settings, deviceUseCases).Setup(administrativeRouter)
 	administrative_view.NewHTTPResolutionModule(settings, resolutionUseCases).Setup(administrativeRouter)
 	administrative_view.NewHTTPPresentationModule(settings, presentationUseCase).Setup(administrativeRouter)
+	administrative_view.NewHTTPDevicePresentationModule(settings, devicePresentationUseCases).Setup(administrativeRouter)
 
 	return nil
 }
