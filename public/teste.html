@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>E-hall | Home</title>
+    <link rel="stylesheet" href="./styles/reset.css" />
+    <link rel="stylesheet" href="./styles/style.css" />
+    <link rel="stylesheet" href="./styles/loading.css" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <main class="main">
+      <div class="image-container">
+        <div class="image-container__content">
+          <span class="logo">E-HALL</span>
+          <h1 class="slogan">
+            Comunicação efetiva em tempo real com a nossa TV corporativa.
+          </h1>
+        </div>
+      </div>
+      <div class="login-form-container">
+        <form class="login-form" id="login-form">
+          <h2 class="login-form__title">Login</h2>
+          <p class="login-form__description">
+            Insira suas credenciais e o dispositivo que a apresentação está
+            vinculada.
+          </p>
+          <div id="error-box" class="error-box">
+            <img
+              src="https://img.icons8.com/ios-glyphs/30/null/error--v2.png"
+            />
+            <span id="error-box-content"></span>
+          </div>
+          <fieldset class="fieldset">
+            <div class="field">
+              <label class="label" for="email">E-mail</label><br />
+              <input
+                class="input email"
+                type="email"
+                name="email"
+                id="email"
+                placeholder="Digite seu e-mail"
+                required
+              /><br />
+            </div>
+            <br />
+            <div class="field">
+              <label class="label" for="device">Dispositivo</label><br />
+              <input
+                class="input text"
+                type="text"
+                name="device"
+                id="device"
+                placeholder="Digite o nome do seu dispositivo"
+                required
+              /><br />
+            </div>
+            <br />
+            <div class="field">
+              <label class="label" for="password">Senha</label><br />
+              <input
+                class="input password"
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Digite sua senha"
+                required
+              /><br />
+            </div>
+          </fieldset>
+          <button
+            class="button submit"
+            type="submit"
+            form="login-form"
+            id="submit-button"
+          >
+            Acessar apresentação
+          </button>
+          <span class="help-box"
+            >Precisa de ajuda?
+            <a
+              class="help-box__link"
+              target="_blank"
+              href="https://www.lincetec.com.br/duvida-ou-proposta"
+              >Fale conosco.</a
+            ></span
+          >
+        </form>
+      </div>
+    </main>
+    <script src="index.js"></script>
+  </body>
+</html>
