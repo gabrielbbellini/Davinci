@@ -50,16 +50,15 @@ func setupDataBase(settings settings.Settings) (*sql.DB, error) {
 
 // setupModules set the MVC structure for the application.
 func setupModules(settings settings.Settings, router *mux.Router, db *sql.DB) error {
-	api := router.PathPrefix("/api").Subrouter()
-	api.Use(rootMiddleware)
+	router.Use(rootMiddleware)
 
-	err := setupAdministrativeModules(settings, api, db)
+	err := setupAdministrativeModules(settings, router, db)
 	if err != nil {
 		log.Println("[SetupMVC] Error setupAdministrativeModules", err)
 		return err
 	}
 
-	err = setupDeviceModules(settings, api, db)
+	err = setupDeviceModules(settings, router, db)
 	if err != nil {
 		log.Println("[SetupMVC] Error setupDeviceModules", err)
 		return err

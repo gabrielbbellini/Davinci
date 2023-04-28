@@ -1,0 +1,24 @@
+body {
+  background-color: #e6e6e6;
+}
+
+.error-box {
+  font-family: "Inter", sans-serif;
+  display: none;
+  font-size: 45px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.login-link {
+  font-size: 24px;
+  color: #4f8c78;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}

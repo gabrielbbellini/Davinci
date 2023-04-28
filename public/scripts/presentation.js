@@ -48,7 +48,7 @@ const generateElement = (obj) => {
 };
 
 const getPresentation = async () => {
-  const response = await fetch("http://10.0.11.135:8000/device/presentation", {
+  const response = await fetch("http://10.0.11.84:8000/device/presentation", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -60,7 +60,7 @@ const getPresentation = async () => {
 
 let previousTemplate;
 
-const runTemplateLoaderRoutine = async () => {
+const updateCurrentPresentation = async () => {
   try {
     const presentation = await getPresentation();
     const template = presentation.pages[0].component;
@@ -70,15 +70,15 @@ const runTemplateLoaderRoutine = async () => {
     document.body.innerHTML = "";
     document.body.appendChild(generateElement(template));
   } catch (e) {
-    console.log("erro: ", e);
-    document.body.innerHTML = "Erro ao carregar template";
+    console.error(e);
+    document.getElementById("error-box").style.display = "block";
   }
 };
 
-runTemplateLoaderRoutine();
+updateCurrentPresentation();
 
 setInterval(async () => {
-  await runTemplateLoaderRoutine();
+  await updateCurrentPresentation();
 }, 1000);
 
 // template = {

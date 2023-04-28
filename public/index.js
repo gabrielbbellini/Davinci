@@ -68,7 +68,7 @@ const login = async () => {
     return;
   }
 
-  const response = await fetch("http://10.0.11.135:8000/device/login", {
+  const response = await fetch("http://10.0.11.84:8000/device/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

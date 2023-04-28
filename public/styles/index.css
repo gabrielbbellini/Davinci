@@ -1,0 +1,167 @@
+* {
+  font-family: "Inter", sans-serif;
+}
+
+.main {
+  height: 100vh;
+  width: 100vw;
+}
+
+.image-container {
+  height: 100%;
+  width: 50vw;
+  float: left;
+  background-color: rgba(0, 0, 0, 0.904);
+  position: relative;
+  background-image: url(../assets/background.png);
+  background-position: right;
+  background-size: 800px;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.image-container__content {
+  width: 80%;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.logo,
+.slogan {
+  color: #e6e6e6;
+  font-weight: bold;
+}
+
+.logo {
+  font-size: 100px;
+  color: #4f8c78;
+}
+
+.slogan {
+  font-size: 45px;
+  margin-top: 30px;
+}
+
+.login-form-container {
+  height: 100%;
+  width: 50vw;
+  float: right;
+  position: relative;
+  background-color: #e6e6e6;
+}
+
+.login-form {
+  width: 410px;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.fieldset {
+  margin-top: 30px;
+}
+
+.login-form__title {
+  font-size: 45px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.login-form__description {
+  color: #a3a3a3;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.label {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.input,
+.button {
+  border: 1px solid #c5c5c5;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 14px 25px;
+  margin-top: 10px;
+  width: 100%;
+  font-size: 24px;
+}
+
+.input:focus,
+.button:focus {
+  outline-color: #4f8c78;
+  transition: 0.2s;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ececec inset !important;
+}
+
+.input {
+  background-color: #dddddd;
+}
+
+.input::placeholder {
+  color: #a3a3a3;
+  font-size: 14px;
+}
+
+.button {
+  color: #e6e6e6;
+  background-color: black;
+  font-size: 20px;
+  cursor: pointer;
+  margin: 30px 0 10px 0;
+  width: 100%;
+}
+
+.button:focus {
+  outline-style: groove;
+  background-color: #4f8c78;
+}
+
+.help-box {
+  font-size: 20px;
+}
+
+.help-box__link:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+.error-box {
+  display: none;
+  box-sizing: border-box;
+  border-radius: 5px;
+  padding: 20px;
+  background-color: #dda8a8;
+  position: relative;
+}
+
+.error-box > span {
+  position: absolute;
+  top: 30px;
+  left: 65px;
+}
+
+@media screen and (max-width: 1000px) {
+  .image-container {
+    display: none;
+  }
+
+  .login-form-container {
+    width: 100%;
+  }
+}
