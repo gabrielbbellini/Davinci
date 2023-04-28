@@ -83,7 +83,7 @@ const login = async () => {
   if (response.status === 200) {
     const token = await response.text();
     localStorage.setItem("token", token);
-    window.location.href = "./pages/presentation.html";
+    window.location.href = "pages/presentation.html";
   } else {
     throw new Error();
   }
