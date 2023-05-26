@@ -22,11 +22,11 @@ func NewUseCases(settings settings.Settings, repository authorization.Repository
 }
 
 func (u useCases) Login(ctx context.Context, credential entities.Credential) (*entities.User, error) {
-	if strings.TrimSpace(credential.Email) == "" {
+	if credential.Email = strings.TrimSpace(credential.Email); credential.Email == "" {
 		return nil, http_error.NewForbiddenError(http_error.ForbiddenMessage)
 	}
 
-	if strings.TrimSpace(credential.Password) == "" {
+	if credential.Password = strings.TrimSpace(credential.Password); credential.Password == "" {
 		return nil, http_error.NewForbiddenError(http_error.ForbiddenMessage)
 	}
 
