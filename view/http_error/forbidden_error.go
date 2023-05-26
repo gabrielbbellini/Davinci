@@ -1,5 +1,9 @@
 package http_error
 
+const (
+	ForbiddenMessage = "Credenciais Inválidas."
+)
+
 type ForbiddenError struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`

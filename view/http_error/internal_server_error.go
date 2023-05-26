@@ -1,5 +1,9 @@
 package http_error
 
+const (
+	InternalErrorMessage = "Ocorreu um erro inesperado."
+)
+
 type InternalServerError struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`

@@ -1,5 +1,9 @@
 package http_error
 
+const (
+	UnauthorizedMessage = "Você não tem permissão para acessar este recurso."
+)
+
 type UnauthorizedError struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`

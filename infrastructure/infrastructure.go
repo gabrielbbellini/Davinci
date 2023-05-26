@@ -54,13 +54,13 @@ func setupModules(settings settings.Settings, router *mux.Router, db *sql.DB) er
 
 	err := setupAdministrativeModules(settings, router, db)
 	if err != nil {
-		log.Println("[SetupMVC] Error setupAdministrativeModules", err)
+		log.Println("[setupModules] Error setupAdministrativeModules", err)
 		return err
 	}
 
 	err = setupDeviceModules(settings, router, db)
 	if err != nil {
-		log.Println("[SetupMVC] Error setupDeviceModules", err)
+		log.Println("[setupModules] Error setupDeviceModules", err)
 		return err
 	}
 

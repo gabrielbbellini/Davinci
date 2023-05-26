@@ -23,11 +23,11 @@ func NewUseCases(settings settings.Settings, repository authorization.Repository
 
 func (u useCases) Login(ctx context.Context, credential entities.Credential) (*entities.User, error) {
 	if strings.TrimSpace(credential.Email) == "" {
-		return nil, http_error.NewForbiddenError("Credenciais inválidas")
+		return nil, http_error.NewForbiddenError(http_error.ForbiddenMessage)
 	}
 
 	if strings.TrimSpace(credential.Password) == "" {
-		return nil, http_error.NewForbiddenError("Credenciais inválidas")
+		return nil, http_error.NewForbiddenError(http_error.ForbiddenMessage)
 	}
 
 	return u.repository.Login(ctx, credential)

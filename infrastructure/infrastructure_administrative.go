@@ -58,7 +58,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		pathTemplate, err := mux.CurrentRoute(r).GetPathTemplate()
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
@@ -70,27 +70,27 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		token, err := getTokenFromRequest(r)
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error getTokenFromRequest", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
 		if !token.Valid {
 			log.Println("[authorizationMiddleware] Error !token.Valid", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok && !token.Valid {
 			log.Println("[authorizationMiddleware] Error !ok && !token.Valid", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
 		userString, ok := claims["user"]
 		if !ok {
 			log.Println("[authorizationMiddleware] Error !ok", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
@@ -98,7 +98,7 @@ func authorizationMiddleware(next http.Handler) http.Handler {
 		err = json.Unmarshal([]byte(userString.(string)), &user)
 		if err != nil {
 			log.Println("[authorizationMiddleware] Error json.Unmarshal", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 

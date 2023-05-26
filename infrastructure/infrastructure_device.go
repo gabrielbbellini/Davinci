@@ -57,7 +57,7 @@ func deviceAuthorizationMiddleware(next http.Handler) http.Handler {
 		pathTemplate, err := mux.CurrentRoute(r).GetPathTemplate()
 		if err != nil {
 			log.Println("[deviceAuthorizationMiddleware] Error", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
@@ -69,7 +69,7 @@ func deviceAuthorizationMiddleware(next http.Handler) http.Handler {
 		token, err := getTokenFromRequest(r)
 		if err != nil {
 			log.Println("[deviceAuthorizationMiddleware] Error getTokenFromRequest", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
@@ -77,21 +77,21 @@ func deviceAuthorizationMiddleware(next http.Handler) http.Handler {
 		if !token.Valid {
 			//If the token is not valid, return an error
 			log.Println("[deviceAuthorizationMiddleware] Error !token.Valid", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok && !token.Valid {
 			log.Println("[deviceAuthorizationMiddleware] Error !ok && !token.Valid", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
 		deviceString, ok := claims["device"]
 		if !ok {
 			log.Println("[deviceAuthorizationMiddleware] Error !ok", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 
@@ -99,7 +99,7 @@ func deviceAuthorizationMiddleware(next http.Handler) http.Handler {
 		err = json.Unmarshal([]byte(deviceString.(string)), &device)
 		if err != nil {
 			log.Println("[deviceAuthorizationMiddleware] Error strconv.Atoi", err)
-			http_error.HandleError(w, http_error.NewForbiddenError("Credenciais inválidas."))
+			http_error.HandleError(w, http_error.NewForbiddenError(http_error.ForbiddenMessage))
 			return
 		}
 

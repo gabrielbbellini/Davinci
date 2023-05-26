@@ -32,7 +32,7 @@ func (r repository) Login(ctx context.Context, credential entities.Credential) (
 	err = bcrypt.CompareHashAndPassword([]byte(user.Credential.Password), []byte(credential.Password))
 	if err != nil {
 		log.Println("[Login] Error bcrypt.CompareHashAndPassword", err)
-		return nil, http_error.NewInternalServerError("Credenciais inválidas.")
+		return nil, http_error.NewInternalServerError(http_error.ForbiddenMessage)
 	}
 
 	return user, err
